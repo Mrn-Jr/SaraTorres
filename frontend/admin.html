@@ -8,21 +8,25 @@
 </head>
 <body class="bg-[url('./assets/5068951.jpg')] bg-cover bg-center bg-fixed text-white min-h-screen font-sans antialiased p-6">
 
-    <!-- Overlay escuro geral por cima da imagem -->
-    <div class="fixed inset-0 bg-black/40 z-[-1]"></div>
+    <!-- Aumentámos o escurecimento geral para 60% (bg-black/60) para uniformizar com a página do cliente -->
+    <div class="fixed inset-0 bg-black/60 z-[-1]"></div>
 
     <div class="max-w-md mx-auto relative z-10">
-        <!-- Cabeçalho do Painel -->
-        <header class="flex justify-between items-center mb-8 border-b border-zinc-500/50 pb-4">
-            <h1 class="text-2xl font-bold text-gray-300 drop-shadow-md">Painel de Gestão</h1>
-            <button class="text-sm text-gray-300 hover:text-white transition">Sair</button>
+        
+        <!-- ALTERAÇÃO 1: Cabeçalho Principal agora é um bloco de vidro fosco -->
+        <header class="flex justify-between items-center mb-8 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-5 shadow-xl">
+            <h1 class="text-2xl font-extrabold text-yellow-500 drop-shadow-lg">Painel de Gestão</h1>
+            <button class="text-sm text-gray-200 hover:text-white font-semibold transition">Sair</button>
         </header>
 
         <!-- Secção 1: Visualização da Agenda -->
         <section class="mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-gray-100 drop-shadow-md">Agenda de Hoje</h2>
+            <!-- ALTERAÇÃO 2: Título da Agenda protegido com vidro fosco -->
+            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl py-3 px-5 mb-4 shadow-xl inline-block">
+                <h2 class="text-lg font-bold text-gray-100 drop-shadow-lg">Agenda de Hoje</h2>
+            </div>
             
-            <!-- AQUI ESTÁ A ALTERAÇÃO: bg-zinc-900/60 (cinza escuro translúcido) e backdrop-blur-md (desfoque fosco médio) -->
+            <!-- Cards de Agendamento -->
             <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 mb-3 shadow-xl border-l-4 border-l-yellow-500">
                 <div class="flex justify-between">
                     <span class="font-bold text-lg text-white">14:00 - 15:00</span>
@@ -32,7 +36,6 @@
                 <p class="text-sm text-gray-400">Serviço: Design com Henna</p>
             </div>
             
-            <!-- Outro Card com o mesmo efeito -->
             <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 mb-3 shadow-xl border-l-4 border-l-zinc-500">
                 <div class="flex justify-between">
                     <span class="font-bold text-lg text-white">15:30 - 16:00</span>
@@ -43,9 +46,9 @@
             </div>
         </section>
 
-        <!-- Secção 2: Gestão de Disponibilidade -->
+        <!-- Secção 2: Gestão de Disponibilidade (O bloco principal já tem vidro fosco, só reforcei o título) -->
         <section class="mb-8 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-5 shadow-xl">
-            <h2 class="text-lg font-semibold mb-2 text-yellow-500">Bloquear Horário</h2>
+            <h2 class="text-lg font-bold text-yellow-500 drop-shadow-lg mb-2">Bloquear Horário</h2>
             <p class="text-xs text-gray-300 mb-4">Adicione bloqueios manuais para imprevistos ou pausas.</p>
             
             <form class="space-y-3">
@@ -67,9 +70,10 @@
 
         <!-- Secção 3: Gestão de Serviços -->
         <section>
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-100 drop-shadow-md">Serviços</h2>
-                <button class="text-sm text-yellow-500 hover:text-yellow-400 font-semibold transition">+ Novo</button>
+            <!-- ALTERAÇÃO 3: Título de Serviços e botão "+ Novo" agrupados num bloco de vidro fosco -->
+            <div class="flex justify-between items-center mb-4 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 shadow-xl">
+                <h2 class="text-lg font-bold text-gray-100 drop-shadow-lg">Serviços</h2>
+                <button class="text-sm text-yellow-500 hover:text-yellow-400 font-bold transition">+ Novo</button>
             </div>
             
             <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 flex justify-between items-center mb-3 shadow-xl">

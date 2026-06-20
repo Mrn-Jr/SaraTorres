@@ -3,57 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendamento de Estética - Dark Premium</title>
-    <!-- Importação do Tailwind CSS via CDN para o exemplo -->
+    <title>Agendamento de Estética - Elegance</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<!-- Fundo escuro e tipografia clara para legibilidade -->
-<body class="bg-zinc-950 text-white min-h-screen font-sans antialiased">
+<body class="bg-[url('./assets/5068951.jpg')] bg-cover bg-center bg-fixed text-white min-h-screen font-sans antialiased">
 
-    <!-- Container centralizado simulando a vista Mobile-First -->
-    <main class="max-w-md mx-auto p-6">
+    <!-- Aumentámos a opacidade do overlay escuro de 40% para 60% (bg-black/60) para acalmar um pouco o brilho do fundo -->
+    <div class="fixed inset-0 bg-black/60 z-[-1]"></div>
+
+    <main class="max-w-md mx-auto relative z-10 p-6">
         
-        <!-- Cabeçalho -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold tracking-tight">Estética Elegance</h1>
-            <p class="text-gray-200 mt-2 text-sm">Selecione o seu serviço e horário</p>
+        <!-- ALTERAÇÃO: O Cabeçalho agora também tem o fundo de vidro fosco para garantir a legibilidade dos títulos -->
+        <header class="text-center mb-8 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-6 shadow-xl">
+            <h1 class="text-3xl font-extrabold tracking-tight text-yellow-500 drop-shadow-lg">Estética Elegance</h1>
+            <p class="text-gray-200 mt-2 text-sm font-medium">Selecione o seu serviço e horário</p>
         </header>
 
-        <!-- Card de Serviço (Fundo cinza escuro translúcido com borda suave) -->
-        <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-5 mb-6 shadow-lg">
+        <!-- Card de Serviço com o efeito Vidro Fosco -->
+        <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-5 mb-6 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <div>
-                    <h2 class="text-xl font-semibold">Design com Henna</h2>
-                    <p class="text-gray-200 text-sm mt-1">Duração: 60 minutos</p>
+                    <h2 class="text-xl font-bold text-yellow-500">Design com Henna</h2>
+                    <p class="text-gray-300 text-sm mt-1">Duração: 60 minutos</p>
                 </div>
-                <!-- Texto de destaque em tom vibrante -->
                 <span class="text-yellow-400 font-bold text-lg">€25</span>
             </div>
             
-            <hr class="border-zinc-700 my-4">
+            <hr class="border-zinc-700/60 my-4">
 
-            <!-- Formulário reduzido ao essencial -->
             <form action="/api/agendar" method="POST" class="space-y-4">
                 <div>
                     <label for="data" class="block text-sm font-medium text-gray-200 mb-1">Escolha a Data</label>
-                    <!-- Input estilizado no padrão dark -->
                     <input type="date" id="data" name="data" 
-                           class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500">
+                           class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500">
                 </div>
 
                 <div>
                     <label for="horario" class="block text-sm font-medium text-gray-200 mb-1">Horários Disponíveis</label>
                     <select id="horario" name="horario" 
-                            class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500">
-                        <option value="">Selecione um horário...</option>
-                        <option value="14:00">14:00</option>
-                        <option value="15:30">15:30</option>
+                            class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 appearance-none">
+                        <option value="" class="bg-zinc-900">Selecione um horário...</option>
+                        <option value="14:00" class="bg-zinc-900">14:00</option>
+                        <option value="15:30" class="bg-zinc-900">15:30</option>
                     </select>
                 </div>
 
-                <!-- Botão Grande de Ação Principal -->
                 <button type="submit" 
-                        class="w-full mt-6 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-bold text-lg py-4 rounded-lg transition duration-200 shadow-md">
+                        class="w-full mt-6 bg-yellow-600/90 hover:bg-yellow-500 text-white font-bold text-lg py-4 rounded-lg transition duration-200 shadow-md">
                     Confirmar Agendamento
                 </button>
             </form>
