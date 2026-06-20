@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - Estética</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[url('./assets/5068951.jpg')] bg-cover bg-center bg-fixed text-white min-h-screen font-sans antialiased p-6">
+
+    <!-- Overlay escuro geral por cima da imagem -->
+    <div class="fixed inset-0 bg-black/40 z-[-1]"></div>
+
+    <div class="max-w-md mx-auto relative z-10">
+        <!-- Cabeçalho do Painel -->
+        <header class="flex justify-between items-center mb-8 border-b border-zinc-500/50 pb-4">
+            <h1 class="text-2xl font-bold text-gray-300 drop-shadow-md">Painel de Gestão</h1>
+            <button class="text-sm text-gray-300 hover:text-white transition">Sair</button>
+        </header>
+
+        <!-- Secção 1: Visualização da Agenda -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-100 drop-shadow-md">Agenda de Hoje</h2>
+            
+            <!-- AQUI ESTÁ A ALTERAÇÃO: bg-zinc-900/60 (cinza escuro translúcido) e backdrop-blur-md (desfoque fosco médio) -->
+            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 mb-3 shadow-xl border-l-4 border-l-yellow-500">
+                <div class="flex justify-between">
+                    <span class="font-bold text-lg text-white">14:00 - 15:00</span>
+                    <span class="text-yellow-400 text-sm font-semibold">Confirmado</span>
+                </div>
+                <p class="text-gray-200 mt-1">Cliente: Maria Silva</p>
+                <p class="text-sm text-gray-400">Serviço: Design com Henna</p>
+            </div>
+            
+            <!-- Outro Card com o mesmo efeito -->
+            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 mb-3 shadow-xl border-l-4 border-l-zinc-500">
+                <div class="flex justify-between">
+                    <span class="font-bold text-lg text-white">15:30 - 16:00</span>
+                    <span class="text-gray-400 text-sm font-semibold">Pendente</span>
+                </div>
+                <p class="text-gray-200 mt-1">Cliente: Ana Costa</p>
+                <p class="text-sm text-gray-400">Serviço: Design Simples</p>
+            </div>
+        </section>
+
+        <!-- Secção 2: Gestão de Disponibilidade -->
+        <section class="mb-8 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-5 shadow-xl">
+            <h2 class="text-lg font-semibold mb-2 text-yellow-500">Bloquear Horário</h2>
+            <p class="text-xs text-gray-300 mb-4">Adicione bloqueios manuais para imprevistos ou pausas.</p>
+            
+            <form class="space-y-3">
+                <div class="flex space-x-2">
+                    <div class="w-1/2">
+                        <label class="block text-xs text-gray-300 mb-1">Início</label>
+                        <input type="time" class="w-full bg-black/60 border border-zinc-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-xs text-gray-300 mb-1">Fim</label>
+                        <input type="time" class="w-full bg-black/60 border border-zinc-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500">
+                    </div>
+                </div>
+                <button type="button" class="w-full bg-yellow-600/90 hover:bg-yellow-500 text-white font-bold text-sm py-2 rounded-lg transition duration-200 shadow-md">
+                    Aplicar Bloqueio
+                </button>
+            </form>
+        </section>
+
+        <!-- Secção 3: Gestão de Serviços -->
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-100 drop-shadow-md">Serviços</h2>
+                <button class="text-sm text-yellow-500 hover:text-yellow-400 font-semibold transition">+ Novo</button>
+            </div>
+            
+            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 flex justify-between items-center mb-3 shadow-xl">
+                <div>
+                    <h3 class="font-medium text-white">Design com Henna</h3>
+                    <p class="text-xs text-gray-400">60 min • €25</p>
+                </div>
+                <button class="text-xs border border-zinc-500 text-gray-200 px-3 py-1 rounded hover:bg-zinc-700 transition">Editar</button>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
