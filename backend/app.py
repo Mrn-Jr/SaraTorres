@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS  # <-- Adicione esta linha (Importa a permissão)
 
 app = Flask(__name__)
+CORS(app)  # <-- Adicione esta linha (Ativa a permissão no seu sistema
 
 # -------------------------------------------------------------------
 # ENDPOINT 1: Listar Serviços

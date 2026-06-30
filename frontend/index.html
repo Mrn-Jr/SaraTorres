@@ -8,43 +8,56 @@
 </head>
 <body class="bg-[url('./assets/5068951.jpg')] bg-cover bg-center bg-fixed text-white min-h-screen font-sans antialiased">
 
-    <!-- Aumentámos a opacidade do overlay escuro de 40% para 60% (bg-black/60) para acalmar um pouco o brilho do fundo -->
     <div class="fixed inset-0 bg-black/60 z-[-1]"></div>
 
     <main class="max-w-md mx-auto relative z-10 p-6">
         
-        <!-- ALTERAÇÃO: O Cabeçalho agora também tem o fundo de vidro fosco para garantir a legibilidade dos títulos -->
         <header class="text-center mb-8 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-6 shadow-xl">
-            <h1 class="text-3xl font-extrabold tracking-tight text-yellow-500 drop-shadow-lg">Estética Elegance</h1>
+            <h1 class="text-3xl font-extrabold tracking-tight text-yellow-500 drop-shadow-lg">Estética Sara Torres</h1>
             <p class="text-gray-200 mt-2 text-sm font-medium">Selecione o seu serviço e horário</p>
         </header>
 
-        <!-- Card de Serviço com o efeito Vidro Fosco -->
         <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-5 mb-6 shadow-xl">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-xl font-bold text-yellow-500">Design com Henna</h2>
-                    <p class="text-gray-300 text-sm mt-1">Duração: 60 minutos</p>
-                </div>
-                <span class="text-yellow-400 font-bold text-lg">€25</span>
-            </div>
             
-            <hr class="border-zinc-700/60 my-4">
-
-            <form action="/api/agendar" method="POST" class="space-y-4">
+            <form id="form-agendamento" class="space-y-4">
+                
+                <!-- Dados do Cliente -->
                 <div>
-                    <label for="data" class="block text-sm font-medium text-gray-200 mb-1">Escolha a Data</label>
-                    <input type="date" id="data" name="data" 
+                    <label class="block text-sm font-medium text-gray-200 mb-1">Seu Nome</label>
+                    <input type="text" id="nome" required placeholder="Ex: Maria Silva"
                            class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500">
                 </div>
 
                 <div>
-                    <label for="horario" class="block text-sm font-medium text-gray-200 mb-1">Horários Disponíveis</label>
-                    <select id="horario" name="horario" 
-                            class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 appearance-none">
-                        <option value="" class="bg-zinc-900">Selecione um horário...</option>
-                        <option value="14:00" class="bg-zinc-900">14:00</option>
-                        <option value="15:30" class="bg-zinc-900">15:30</option>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">WhatsApp</label>
+                    <input type="tel" id="telefone" required placeholder="Ex: 912345678"
+                           class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500">
+                </div>
+
+                <hr class="border-zinc-700/60 my-4">
+
+                <!-- Seleção de Serviço da API -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">Serviço</label>
+                    <select id="servico" required 
+                            class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 appearance-none">
+                        <option value="" class="bg-zinc-900">A carregar serviços...</option>
+                    </select>
+                </div>
+
+                <!-- Escolha de Data -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">Escolha a Data</label>
+                    <input type="date" id="data" required 
+                           class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500">
+                </div>
+
+                <!-- Horários Livres (Vêm da API) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-200 mb-1">Horários Disponíveis</label>
+                    <select id="horario" required disabled
+                            class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 appearance-none disabled:opacity-50">
+                        <option value="" class="bg-zinc-900">Selecione uma data primeiro...</option>
                     </select>
                 </div>
 
@@ -57,5 +70,84 @@
         
     </main>
 
+    <!-- AQUI ENTRA O JAVASCRIPT QUE COMUNICA COM O BACKEND EM PYTHON -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const servicoSelect = document.getElementById('servico');
+            const dataInput = document.getElementById('data');
+            const horarioSelect = document.getElementById('horario');
+            const form = document.getElementById('form-agendamento');
+
+            // 1. Ligar ao servidor Python para buscar o catálogo
+            fetch('http://127.0.0.1:5000/api/servicos')
+                .then(response => response.json())
+                .then(data => {
+                    servicoSelect.innerHTML = '<option value="" class="bg-zinc-900">Selecione um serviço...</option>';
+                    data.servicos.forEach(s => {
+                        servicoSelect.innerHTML += `<option value="${s.id_servico}" class="bg-zinc-900">${s.nome_servico} - €${s.preco} (${s.duracao_minutos} min)</option>`;
+                    });
+                })
+                .catch(err => {
+                    console.error("Erro na comunicação com o Python:", err);
+                    servicoSelect.innerHTML = '<option value="">Erro ao carregar serviços</option>';
+                });
+
+            // 2. Ligar ao servidor Python para buscar horários livres
+            dataInput.addEventListener('change', buscarHorarios);
+            servicoSelect.addEventListener('change', buscarHorarios);
+
+            function buscarHorarios() {
+                const dataEscolhida = dataInput.value;
+                const idServico = servicoSelect.value;
+
+                if (dataEscolhida && idServico) {
+                    horarioSelect.innerHTML = '<option value="" class="bg-zinc-900">A procurar vagas...</option>';
+                    horarioSelect.disabled = true;
+
+                    fetch(`http://127.0.0.1:5000/api/horarios-livres?data=${dataEscolhida}&id_servico=${idServico}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            horarioSelect.innerHTML = '<option value="" class="bg-zinc-900">Selecione um horário...</option>';
+                            horarioSelect.disabled = false;
+                            
+                            if(data.horarios_disponiveis.length === 0) {
+                                horarioSelect.innerHTML = '<option value="" class="bg-zinc-900">Sem vagas neste dia</option>';
+                                horarioSelect.disabled = true;
+                            } else {
+                                data.horarios_disponiveis.forEach(h => {
+                                    horarioSelect.innerHTML += `<option value="${h}" class="bg-zinc-900">${h}</option>`;
+                                });
+                            }
+                        });
+                }
+            }
+
+            // 3. Enviar a marcação
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const dadosAgendamento = {
+                    nome: document.getElementById('nome').value,
+                    telefone: document.getElementById('telefone').value,
+                    id_servico: servicoSelect.value,
+                    data: dataInput.value,
+                    horario: horarioSelect.value
+                };
+
+                fetch('http://127.0.0.1:5000/api/agendar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dadosAgendamento)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.mensagem);
+                    form.reset();
+                    horarioSelect.innerHTML = '<option value="" class="bg-zinc-900">Selecione uma data primeiro...</option>';
+                    horarioSelect.disabled = true;
+                });
+            });
+        });
+    </script>
 </body>
 </html>
