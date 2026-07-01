@@ -1,68 +1,82 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS  # <-- Adicione esta linha (Importa a permissão)
+from flask_cors import CORS
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-CORS(app)  # <-- Adicione esta linha (Ativa a permissão no seu sistema
+CORS(app)
 
-# -------------------------------------------------------------------
-# ENDPOINT 1: Listar Serviços
-# -------------------------------------------------------------------
+# 1. Catálogo de Serviços (Base de Dados Simulada)
+SERVICOS = [
+    {"id_servico": 1, "nome_servico": "Design Simples", "preco": 15, "duracao_minutos": 30},
+    {"id_servico": 2, "nome_servico": "Design com Henna", "preco": 25, "duracao_minutos": 60}
+]
+
+# 2. Agenda Ocupada (Simulando que uma cliente já marcou um serviço de 1 hora hoje)
+AGENDAMENTOS_EXISTENTES = [
+    {"data": "2026-10-25", "hora_inicio": "14:00", "hora_fim": "15:00"}
+]
+
 @app.route('/api/servicos', methods=['GET'])
 def listar_servicos():
-    """
-    Retorna a lista de serviços (ex: Design, Henna) com preços e tempos de duração [2].
-    """
-    # No futuro, estes dados virão do ficheiro database.py
-    servicos_mock = [
-        {"id_servico": 1, "nome_servico": "Design Simples", "duracao_minutos": 30, "preco": 15.00},
-        {"id_servico": 2, "nome_servico": "Design com Henna", "duracao_minutos": 60, "preco": 25.00}
-    ]
-    return jsonify({"servicos": servicos_mock}), 200
+    return jsonify({"servicos": SERVICOS})
 
-# -------------------------------------------------------------------
-# ENDPOINT 2: Buscar Horários Livres
-# -------------------------------------------------------------------
 @app.route('/api/horarios-livres', methods=['GET'])
 def buscar_horarios():
-    """
-    Recebe uma data e o ID do serviço, e retorna os blocos de horas disponíveis no dia [2].
-    """
-    data = request.args.get('data')
-    id_servico = request.args.get('id_servico')
-    
-    # Aqui chamaremos a lógica complexa do ficheiro algoritmos.py para cruzar 
-    # a duração do serviço com a agenda livre do dia [1].
-    # Por enquanto, devolvemos um exemplo estático para a interface funcionar:
-    horarios_mock = ["14:00", "15:30", "17:00"]
-    
-    return jsonify({
-        "data_solicitada": data,
-        "id_servico": id_servico,
-        "horarios_disponiveis": horarios_mock
-    }), 200
+    data_escolhida = request.args.get('data')
+    id_servico = int(request.args.get('id_servico', 1))
 
-# -------------------------------------------------------------------
-# ENDPOINT 3: Efetuar Agendamento
-# -------------------------------------------------------------------
+    # A. Descobrir a duração dinâmica do serviço escolhido
+    duracao = 30
+    for s in SERVICOS:
+        if s['id_servico'] == id_servico:
+            duracao = s['duracao_minutos']
+            break
+
+    # B. Definir Horário de Funcionamento e Pausas
+    hora_abertura = datetime.strptime("09:00", "%H:%M")
+    hora_fecho = datetime.strptime("18:00", "%H:%M")
+    almoco_inicio = datetime.strptime("13:00", "%H:%M")
+    almoco_fim = datetime.strptime("14:00", "%H:%M")
+
+    # C. Filtrar as marcações que já existem para a data escolhida
+    marcacoes_do_dia = [a for a in AGENDAMENTOS_EXISTENTES if a['data'] == data_escolhida]
+
+    horarios_livres = []
+    hora_atual = hora_abertura
+
+    # D. O Algoritmo: Percorrer o dia e testar encaixes
+    while hora_atual + timedelta(minutes=duracao) <= hora_fecho:
+        hora_fim_estimada = hora_atual + timedelta(minutes=duracao)
+
+        # Regra 1: O serviço não pode calhar na hora de almoço
+        bate_no_almoco = (hora_atual < almoco_fim and hora_fim_estimada > almoco_inicio)
+
+        # Regra 2: Prevenção de conflitos com outras clientes
+        conflito_agenda = False
+        for m in marcacoes_do_dia:
+            m_inicio = datetime.strptime(m['hora_inicio'], "%H:%M")
+            m_fim = datetime.strptime(m['hora_fim'], "%H:%M")
+            
+            # Se os horários se cruzarem, detetamos um conflito
+            if hora_atual < m_fim and hora_fim_estimada > m_inicio:
+                conflito_agenda = True
+                break
+
+        # Se não houver conflitos e não for hora de almoço, o horário é válido!
+        if not bate_no_almoco and not conflito_agenda:
+            horarios_livres.append(hora_atual.strftime("%H:%M"))
+
+        # Avançar o relógio de 30 em 30 minutos para testar a próxima vaga
+        hora_atual += timedelta(minutes=30)
+
+    return jsonify({"horarios_disponiveis": horarios_livres})
+
 @app.route('/api/agendar', methods=['POST'])
 def agendar_servico():
-    """
-    Recebe os dados da cliente e grava o agendamento no banco de dados, bloqueando aquele espaço de tempo [2].
-    """
-    dados_cliente = request.json
-    
-    # Dados esperados do frontend: nome, telefone, id_servico, data, horario
-    nome = dados_cliente.get('nome')
-    telefone = dados_cliente.get('telefone')
-    horario = dados_cliente.get('horario')
-    
-    # Aqui conectaremos com o database.py para gravar na tabela 'Agendamentos' e 'Clientes'.
-    
-    return jsonify({
-        "status": "sucesso",
-        "mensagem": f"Agendamento confirmado para {nome} às {horario}."
-    }), 201
+    dados = request.get_json()
+    nome = dados.get('nome')
+    print(f"Novo agendamento de {nome} processado com sucesso!")
+    return jsonify({"mensagem": f"Sucesso! Agendamento de {nome} confirmado."}), 201
 
 if __name__ == '__main__':
-    # Inicia o servidor local na porta 5000
-    app.run(debug=True, port=5000)
+    app.run(debug=True)
