@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - Estética</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fundo a simular a textura de mármore escuro com veios dourados */
+        body {
+            background-color: #09090b;
+            background-image: radial-gradient(circle at 15% 50%, rgba(202, 138, 4, 0.05), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(202, 138, 4, 0.05), transparent 25%);
+        }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen p-4 md:p-8 font-sans">
+    
+    <div class="max-w-xl mx-auto space-y-6">
+        
+        <!-- Cabeçalho Principal -->
+        <header class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-5 flex justify-between items-center shadow-lg backdrop-blur-sm">
+            <h1 class="text-2xl font-black text-yellow-500 tracking-wide drop-shadow-md">Painel de Gestão</h1>
+            <button class="text-zinc-400 hover:text-white text-sm font-medium transition-colors">Sair</button>
+        </header>
+
+        <!-- Separador Agenda de Hoje -->
+        <div class="inline-block bg-zinc-950/80 border border-zinc-800 rounded-lg px-6 py-3 shadow-lg">
+            <h2 class="text-lg font-bold text-white">Agenda de Hoje</h2>
+        </div>
+
+        <!-- Lista de Agendamentos (Igual à imagem) -->
+        <div id="lista-agendamentos" class="space-y-4">
+            
+            <!-- Cartão 1: Confirmado -->
+            <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold text-white tracking-wide">14:00 - 15:00</h3>
+                    <span class="text-yellow-500 text-sm font-semibold">Confirmado</span>
+                </div>
+                <p class="text-zinc-300">Cliente: <span class="text-white font-medium">Maria Silva</span></p>
+                <p class="text-zinc-500 text-sm mt-0.5">Serviço: Design com Henna</p>
+            </div>
+
+            <!-- Cartão 2: Pendente -->
+            <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold text-white tracking-wide">15:30 - 16:00</h3>
+                    <span class="text-zinc-500 text-sm font-semibold">Pendente</span>
+                </div>
+                <p class="text-zinc-300">Cliente: <span class="text-white font-medium">Ana Costa</span></p>
+                <p class="text-zinc-500 text-sm mt-0.5">Serviço: Design Simples</p>
+            </div>
+
+        </div>
+
+        <!-- Secção: Bloquear Horário -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
+            <h2 class="text-xl font-bold text-yellow-500 mb-1">Bloquear Horário</h2>
+            <p class="text-zinc-400 text-sm mb-4">Adicione bloqueios manuais para imprevistos ou pausas.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-zinc-300 text-xs mb-1">Início</label>
+                    <input type="time" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                </div>
+                <div>
+                    <label class="block text-zinc-300 text-xs mb-1">Fim</label>
+                    <input type="time" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                </div>
+            </div>
+            
+            <button class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
+                Aplicar Bloqueio
+            </button>
+        </div>
+
+        <!-- Secção: Serviços -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">Serviços</h2>
+            <button class="text-yellow-500 font-semibold hover:text-yellow-400">+ Novo</button>
+        </div>
+
+        <!-- Cartão de Serviço Editável -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md flex justify-between items-center mb-10">
+            <div>
+                <h3 class="text-lg font-bold text-white">Design com Henna</h3>
+                <p class="text-zinc-500 text-sm mt-0.5">60 min &bull; €25</p>
+            </div>
+            <button class="border border-zinc-700 text-zinc-300 px-4 py-1.5 rounded-lg text-sm hover:bg-zinc-800 transition-colors">
+                Editar
+            </button>
+        </div>
+
+    </div>
+</body>
+</html>

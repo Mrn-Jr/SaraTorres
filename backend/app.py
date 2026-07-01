@@ -1,72 +1,71 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime, timedelta
+import sqlite3
 
 app = Flask(__name__)
 CORS(app)
 
-# 1. Catálogo de Serviços (Base de Dados Simulada)
-SERVICOS = [
-    {"id_servico": 1, "nome_servico": "Design Simples", "preco": 15, "duracao_minutos": 30},
-    {"id_servico": 2, "nome_servico": "Design com Henna", "preco": 25, "duracao_minutos": 60}
-]
+# --------------------------------------------------------
+# FUNÇÃO ESSENCIAL: A "ponte" para a Base de Dados
+# --------------------------------------------------------
+def conectar_db():
+    conexao = sqlite3.connect('backend/estetica.db')
+    conexao.row_factory = sqlite3.Row
+    return conexao
 
-# 2. Agenda Ocupada (Simulando que uma cliente já marcou um serviço de 1 hora hoje)
-AGENDAMENTOS_EXISTENTES = [
-    {"data": "2026-10-25", "hora_inicio": "14:00", "hora_fim": "15:00"}
-]
-
+# --------------------------------------------------------
+# ROTAS DOS CLIENTES (Agendar e Ver Serviços)
+# --------------------------------------------------------
 @app.route('/api/servicos', methods=['GET'])
 def listar_servicos():
-    return jsonify({"servicos": SERVICOS})
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+    cursor.execute("SELECT * FROM Servicos WHERE status_ativo = 1")
+    servicos = [dict(linha) for linha in cursor.fetchall()]
+    conexao.close()
+    return jsonify({"servicos": servicos})
 
 @app.route('/api/horarios-livres', methods=['GET'])
 def buscar_horarios():
     data_escolhida = request.args.get('data')
     id_servico = int(request.args.get('id_servico', 1))
 
-    # A. Descobrir a duração dinâmica do serviço escolhido
-    duracao = 30
-    for s in SERVICOS:
-        if s['id_servico'] == id_servico:
-            duracao = s['duracao_minutos']
-            break
+    conexao = conectar_db()
+    cursor = conexao.cursor()
 
-    # B. Definir Horário de Funcionamento e Pausas
+    cursor.execute("SELECT duracao_minutos FROM Servicos WHERE id_servico = ?", (id_servico,))
+    resultado = cursor.fetchone()
+    duracao = resultado['duracao_minutos'] if resultado else 30
+
+    cursor.execute("SELECT data_hora_inicio, data_hora_fim FROM Agendamentos WHERE date(data_hora_inicio) = ?", (data_escolhida,))
+    marcacoes_do_dia = cursor.fetchall()
+    conexao.close()
+
     hora_abertura = datetime.strptime("09:00", "%H:%M")
     hora_fecho = datetime.strptime("18:00", "%H:%M")
     almoco_inicio = datetime.strptime("13:00", "%H:%M")
     almoco_fim = datetime.strptime("14:00", "%H:%M")
 
-    # C. Filtrar as marcações que já existem para a data escolhida
-    marcacoes_do_dia = [a for a in AGENDAMENTOS_EXISTENTES if a['data'] == data_escolhida]
-
     horarios_livres = []
     hora_atual = hora_abertura
 
-    # D. O Algoritmo: Percorrer o dia e testar encaixes
     while hora_atual + timedelta(minutes=duracao) <= hora_fecho:
         hora_fim_estimada = hora_atual + timedelta(minutes=duracao)
-
-        # Regra 1: O serviço não pode calhar na hora de almoço
         bate_no_almoco = (hora_atual < almoco_fim and hora_fim_estimada > almoco_inicio)
-
-        # Regra 2: Prevenção de conflitos com outras clientes
+        
         conflito_agenda = False
         for m in marcacoes_do_dia:
-            m_inicio = datetime.strptime(m['hora_inicio'], "%H:%M")
-            m_fim = datetime.strptime(m['hora_fim'], "%H:%M")
+            m_inicio = datetime.strptime(m['data_hora_inicio'].split(" ")[:5], "%H:%M")
+            m_fim = datetime.strptime(m['data_hora_fim'].split(" ")[:5], "%H:%M")
             
-            # Se os horários se cruzarem, detetamos um conflito
             if hora_atual < m_fim and hora_fim_estimada > m_inicio:
                 conflito_agenda = True
                 break
 
-        # Se não houver conflitos e não for hora de almoço, o horário é válido!
         if not bate_no_almoco and not conflito_agenda:
             horarios_livres.append(hora_atual.strftime("%H:%M"))
 
-        # Avançar o relógio de 30 em 30 minutos para testar a próxima vaga
         hora_atual += timedelta(minutes=30)
 
     return jsonify({"horarios_disponiveis": horarios_livres})
@@ -75,8 +74,55 @@ def buscar_horarios():
 def agendar_servico():
     dados = request.get_json()
     nome = dados.get('nome')
-    print(f"Novo agendamento de {nome} processado com sucesso!")
-    return jsonify({"mensagem": f"Sucesso! Agendamento de {nome} confirmado."}), 201
+    telefone = dados.get('telefone')
+    id_servico = dados.get('id_servico')
+    data = dados.get('data')
+    horario = dados.get('horario')
+
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+
+    cursor.execute("INSERT INTO Clientes (nome, telefone_whatsapp) VALUES (?, ?)", (nome, telefone))
+    id_cliente = cursor.lastrowid
+
+    cursor.execute("SELECT duracao_minutos FROM Servicos WHERE id_servico = ?", (id_servico,))
+    duracao = cursor.fetchone()['duracao_minutos']
+
+    inicio_str = f"{data} {horario}:00"
+    inicio_dt = datetime.strptime(inicio_str, "%Y-%m-%d %H:%M:%S")
+    fim_dt = inicio_dt + timedelta(minutes=duracao)
+
+    cursor.execute('''
+        INSERT INTO Agendamentos (id_cliente, id_servico, data_hora_inicio, data_hora_fim, status)
+        VALUES (?, ?, ?, ?, 'confirmado')
+    ''', (id_cliente, id_servico, inicio_dt.strftime("%Y-%m-%d %H:%M:%S"), fim_dt.strftime("%Y-%m-%d %H:%M:%S")))
+
+    conexao.commit()
+    conexao.close()
+
+    return jsonify({"mensagem": f"Sucesso! O agendamento de {nome} foi gravado."}), 201
+
+# --------------------------------------------------------
+# ROTA DA ADMINISTRADORA (Painel de Gestão)
+# --------------------------------------------------------
+@app.route('/api/admin/agendamentos', methods=['GET'])
+def listar_agendamentos():
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+    
+    cursor.execute('''
+        SELECT a.id_agendamento, c.nome, c.telefone_whatsapp, s.nome_servico,
+               a.data_hora_inicio, a.data_hora_fim, a.status
+        FROM Agendamentos a
+        JOIN Clientes c ON a.id_cliente = c.id_cliente
+        JOIN Servicos s ON a.id_servico = s.id_servico
+        ORDER BY a.data_hora_inicio ASC
+    ''')
+    
+    agendamentos = [dict(linha) for linha in cursor.fetchall()]
+    conexao.close()
+    
+    return jsonify({"agendamentos": agendamentos})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

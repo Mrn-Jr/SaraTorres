@@ -5,87 +5,134 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Gestão - Estética</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fundo a simular a textura de mármore escuro com veios dourados da imagem aprovada */
+        body {
+            background-color: #09090b;
+            background-image: radial-gradient(circle at 15% 50%, rgba(202, 138, 4, 0.05), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(202, 138, 4, 0.05), transparent 25%);
+        }
+    </style>
 </head>
-<body class="bg-[url('./assets/5068951.jpg')] bg-cover bg-center bg-fixed text-white min-h-screen font-sans antialiased p-6">
-
-    <!-- Aumentámos o escurecimento geral para 60% (bg-black/60) para uniformizar com a página do cliente -->
-    <div class="fixed inset-0 bg-black/60 z-[-1]"></div>
-
-    <div class="max-w-md mx-auto relative z-10">
+<body class="text-gray-200 min-h-screen p-4 md:p-8 font-sans">
+    
+    <div class="max-w-xl mx-auto space-y-6">
         
-        <!-- ALTERAÇÃO 1: Cabeçalho Principal agora é um bloco de vidro fosco -->
-        <header class="flex justify-between items-center mb-8 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-5 shadow-xl">
-            <h1 class="text-2xl font-extrabold text-yellow-500 drop-shadow-lg">Painel de Gestão</h1>
-            <button class="text-sm text-gray-200 hover:text-white font-semibold transition">Sair</button>
+        <!-- Cabeçalho Principal -->
+        <header class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-5 flex justify-between items-center shadow-lg backdrop-blur-sm">
+            <h1 class="text-2xl font-black text-yellow-500 tracking-wide drop-shadow-md">Painel de Gestão</h1>
+            <button class="text-zinc-400 hover:text-white text-sm font-medium transition-colors">Sair</button>
         </header>
 
-        <!-- Secção 1: Visualização da Agenda -->
-        <section class="mb-8">
-            <!-- ALTERAÇÃO 2: Título da Agenda protegido com vidro fosco -->
-            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl py-3 px-5 mb-4 shadow-xl inline-block">
-                <h2 class="text-lg font-bold text-gray-100 drop-shadow-lg">Agenda de Hoje</h2>
-            </div>
-            
-            <!-- Cards de Agendamento -->
-            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 mb-3 shadow-xl border-l-4 border-l-yellow-500">
-                <div class="flex justify-between">
-                    <span class="font-bold text-lg text-white">14:00 - 15:00</span>
-                    <span class="text-yellow-400 text-sm font-semibold">Confirmado</span>
-                </div>
-                <p class="text-gray-200 mt-1">Cliente: Maria Silva</p>
-                <p class="text-sm text-gray-400">Serviço: Design com Henna</p>
-            </div>
-            
-            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 mb-3 shadow-xl border-l-4 border-l-zinc-500">
-                <div class="flex justify-between">
-                    <span class="font-bold text-lg text-white">15:30 - 16:00</span>
-                    <span class="text-gray-400 text-sm font-semibold">Pendente</span>
-                </div>
-                <p class="text-gray-200 mt-1">Cliente: Ana Costa</p>
-                <p class="text-sm text-gray-400">Serviço: Design Simples</p>
-            </div>
-        </section>
+        <!-- Separador Agenda de Hoje -->
+        <div class="inline-block bg-zinc-950/80 border border-zinc-800 rounded-lg px-6 py-3 shadow-lg">
+            <h2 class="text-lg font-bold text-white">Agenda de Hoje</h2>
+        </div>
 
-        <!-- Secção 2: Gestão de Disponibilidade (O bloco principal já tem vidro fosco, só reforcei o título) -->
-        <section class="mb-8 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-5 shadow-xl">
-            <h2 class="text-lg font-bold text-yellow-500 drop-shadow-lg mb-2">Bloquear Horário</h2>
-            <p class="text-xs text-gray-300 mb-4">Adicione bloqueios manuais para imprevistos ou pausas.</p>
-            
-            <form class="space-y-3">
-                <div class="flex space-x-2">
-                    <div class="w-1/2">
-                        <label class="block text-xs text-gray-300 mb-1">Início</label>
-                        <input type="time" class="w-full bg-black/60 border border-zinc-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500">
-                    </div>
-                    <div class="w-1/2">
-                        <label class="block text-xs text-gray-300 mb-1">Fim</label>
-                        <input type="time" class="w-full bg-black/60 border border-zinc-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-yellow-500">
-                    </div>
-                </div>
-                <button type="button" class="w-full bg-yellow-600/90 hover:bg-yellow-500 text-white font-bold text-sm py-2 rounded-lg transition duration-200 shadow-md">
-                    Aplicar Bloqueio
-                </button>
-            </form>
-        </section>
+        <!-- Lista de Agendamentos (Onde a mágica acontece!) -->
+        <div id="lista-agendamentos" class="space-y-4">
+            <!-- Texto de carregamento enquanto o Python processa -->
+            <p class="text-zinc-500 animate-pulse bg-zinc-900/90 border border-zinc-800 rounded-xl p-5">A carregar a sua agenda do banco de dados...</p>
+        </div>
 
-        <!-- Secção 3: Gestão de Serviços -->
-        <section>
-            <!-- ALTERAÇÃO 3: Título de Serviços e botão "+ Novo" agrupados num bloco de vidro fosco -->
-            <div class="flex justify-between items-center mb-4 bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 shadow-xl">
-                <h2 class="text-lg font-bold text-gray-100 drop-shadow-lg">Serviços</h2>
-                <button class="text-sm text-yellow-500 hover:text-yellow-400 font-bold transition">+ Novo</button>
-            </div>
+        <!-- Secção: Bloquear Horário (Requisito da Administradora) -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
+            <h2 class="text-xl font-bold text-yellow-500 mb-1">Bloquear Horário</h2>
+            <p class="text-zinc-400 text-sm mb-4">Adicione bloqueios manuais para imprevistos ou pausas.</p>
             
-            <div class="bg-zinc-900/60 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 flex justify-between items-center mb-3 shadow-xl">
+            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <h3 class="font-medium text-white">Design com Henna</h3>
-                    <p class="text-xs text-gray-400">60 min • €25</p>
+                    <label class="block text-zinc-300 text-xs mb-1">Início</label>
+                    <input type="time" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
                 </div>
-                <button class="text-xs border border-zinc-500 text-gray-200 px-3 py-1 rounded hover:bg-zinc-700 transition">Editar</button>
+                <div>
+                    <label class="block text-zinc-300 text-xs mb-1">Fim</label>
+                    <input type="time" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                </div>
             </div>
-        </section>
+            
+            <button class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
+                Aplicar Bloqueio
+            </button>
+        </div>
+
+        <!-- Secção: Serviços -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">Serviços</h2>
+            <button class="text-yellow-500 font-semibold hover:text-yellow-400">+ Novo</button>
+        </div>
 
     </div>
 
+    <!-- O Cérebro da Interface: JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const lista = document.getElementById('lista-agendamentos');
+            
+            fetch('http://127.0.0.1:5000/api/admin/agendamentos')
+                .then(response => response.json())
+                .then(data => {
+                    lista.innerHTML = ''; 
+
+                    if (data.agendamentos.length === 0) {
+                        lista.innerHTML = `
+                            <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md text-center">
+                                <p class="text-zinc-400 italic">A sua agenda está livre neste momento.</p>
+                            </div>`;
+                        return;
+                    }
+                    
+                    data.agendamentos.forEach(agendamento => {
+                        const horaInicioObj = new Date(agendamento.data_hora_inicio);
+                        const horaFimObj = new Date(agendamento.data_hora_fim);
+                        const horaInicio = horaInicioObj.toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                        const horaFim = horaFimObj.toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                        const dataFormatada = horaInicioObj.toLocaleDateString('pt-PT');
+
+                        let corStatus = agendamento.status === 'confirmado' ? 'text-yellow-500' : 'text-zinc-500';
+
+                        // --- NOVA LÓGICA DE TRATAMENTO DE WHATSAPP ---
+                        // 1. Pega o número e retira tudo o que não for número (Remove parênteses, traços, espaços)
+                        let numeroLimpo = agendamento.telefone_whatsapp.replace(/\D/g, '');
+                        
+                        // 2. Adiciona o código do país automaticamente se a cliente não tiver colocado
+                        if (numeroLimpo.length === 10 || numeroLimpo.length === 11) {
+                            // Se tiver 10 ou 11 dígitos (Padrão Brasil DDD + Número), adiciona o 55
+                            numeroLimpo = '55' + numeroLimpo;
+                        } else if (numeroLimpo.length === 9) {
+                            // Se tiver 9 dígitos (Padrão Portugal), adiciona o 351
+                            numeroLimpo = '351' + numeroLimpo;
+                        }
+                        // ----------------------------------------------
+
+                        lista.innerHTML += `
+                            <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="text-xl font-bold text-white tracking-wide">${horaInicio} - ${horaFim}</h3>
+                                    <span class="${corStatus} text-sm font-semibold capitalize">${agendamento.status}</span>
+                                </div>
+                                <p class="text-zinc-300">Cliente: <span class="text-white font-medium">${agendamento.nome}</span></p>
+                                <p class="text-zinc-500 text-sm mt-0.5">
+                                    Serviço: ${agendamento.nome_servico} | 
+                                    Data: ${dataFormatada}
+                                </p>
+                                <div class="mt-3 pt-3 border-t border-zinc-800/50">
+                                    <a href="https://wa.me/${numeroLimpo}" target="_blank" class="text-sm font-medium text-green-500 hover:text-green-400 transition-colors">
+                                        Falar no WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(err => {
+                    console.error("Erro:", err);
+                    lista.innerHTML = `
+                        <div class="bg-red-950/50 border border-red-900 rounded-xl p-5 shadow-md text-center">
+                            <p class="text-red-400">Erro ao carregar a agenda. Verifique se o backend Python está a rodar.</p>
+                        </div>`;
+                });
+        });
+    </script>
 </body>
 </html>
