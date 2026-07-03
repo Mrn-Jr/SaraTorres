@@ -35,23 +35,27 @@
             <p class="text-zinc-500 animate-pulse bg-zinc-900/90 border border-zinc-800 rounded-xl p-5">A carregar a sua agenda do banco de dados...</p>
         </div>
 
-        <!-- Secção: Bloquear Horário (Requisito da Administradora) -->
+        <!-- Secção: Bloquear Horário -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
             <h2 class="text-xl font-bold text-yellow-500 mb-1">Bloquear Horário</h2>
             <p class="text-zinc-400 text-sm mb-4">Adicione bloqueios manuais para imprevistos ou pausas.</p>
             
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-zinc-300 text-xs mb-1">Data</label>
+                    <input type="date" id="data_bloqueio" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                </div>
                 <div>
                     <label class="block text-zinc-300 text-xs mb-1">Início</label>
-                    <input type="time" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                    <input type="time" id="inicio_bloqueio" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
                 </div>
                 <div>
                     <label class="block text-zinc-300 text-xs mb-1">Fim</label>
-                    <input type="time" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                    <input type="time" id="fim_bloqueio" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
                 </div>
             </div>
             
-            <button class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
+            <button id="btn_bloquear" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
                 Aplicar Bloqueio
             </button>
         </div>
@@ -69,6 +73,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const lista = document.getElementById('lista-agendamentos');
             
+            // --- Lógica para Listar a Agenda ---
             fetch('http://127.0.0.1:5000/api/admin/agendamentos')
                 .then(response => response.json())
                 .then(data => {
@@ -89,21 +94,22 @@
                         const horaFim = horaFimObj.toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
                         const dataFormatada = horaInicioObj.toLocaleDateString('pt-PT');
 
-                        let corStatus = agendamento.status === 'confirmado' ? 'text-yellow-500' : 'text-zinc-500';
+                        let corStatus = agendamento.status === 'confirmado' ? 'text-yellow-500' : (agendamento.status === 'bloqueado' ? 'text-red-500' : 'text-zinc-500');
 
-                        // --- NOVA LÓGICA DE TRATAMENTO DE WHATSAPP ---
-                        // 1. Pega o número e retira tudo o que não for número (Remove parênteses, traços, espaços)
-                        let numeroLimpo = agendamento.telefone_whatsapp.replace(/\D/g, '');
-                        
-                        // 2. Adiciona o código do país automaticamente se a cliente não tiver colocado
-                        if (numeroLimpo.length === 10 || numeroLimpo.length === 11) {
-                            // Se tiver 10 ou 11 dígitos (Padrão Brasil DDD + Número), adiciona o 55
-                            numeroLimpo = '55' + numeroLimpo;
-                        } else if (numeroLimpo.length === 9) {
-                            // Se tiver 9 dígitos (Padrão Portugal), adiciona o 351
-                            numeroLimpo = '351' + numeroLimpo;
+                        // Lógica protegida do WhatsApp (só aparece se houver número de cliente)
+                        let htmlWhatsApp = '';
+                        if (agendamento.telefone_whatsapp) {
+                            let numeroLimpo = agendamento.telefone_whatsapp.replace(/\D/g, '');
+                            if (numeroLimpo.length === 10 || numeroLimpo.length === 11) { numeroLimpo = '55' + numeroLimpo; } 
+                            else if (numeroLimpo.length === 9) { numeroLimpo = '351' + numeroLimpo; }
+                            
+                            htmlWhatsApp = `
+                                <div class="mt-3 pt-3 border-t border-zinc-800/50">
+                                    <a href="https://wa.me/${numeroLimpo}" target="_blank" class="text-sm font-medium text-green-500 hover:text-green-400 transition-colors">
+                                        Falar no WhatsApp
+                                    </a>
+                                </div>`;
                         }
-                        // ----------------------------------------------
 
                         lista.innerHTML += `
                             <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md">
@@ -111,27 +117,42 @@
                                     <h3 class="text-xl font-bold text-white tracking-wide">${horaInicio} - ${horaFim}</h3>
                                     <span class="${corStatus} text-sm font-semibold capitalize">${agendamento.status}</span>
                                 </div>
-                                <p class="text-zinc-300">Cliente: <span class="text-white font-medium">${agendamento.nome}</span></p>
+                                <p class="text-zinc-300">Cliente/Evento: <span class="text-white font-medium">${agendamento.nome}</span></p>
                                 <p class="text-zinc-500 text-sm mt-0.5">
-                                    Serviço: ${agendamento.nome_servico} | 
-                                    Data: ${dataFormatada}
+                                    Serviço: ${agendamento.nome_servico} | Data: ${dataFormatada}
                                 </p>
-                                <div class="mt-3 pt-3 border-t border-zinc-800/50">
-                                    <a href="https://wa.me/${numeroLimpo}" target="_blank" class="text-sm font-medium text-green-500 hover:text-green-400 transition-colors">
-                                        Falar no WhatsApp
-                                    </a>
-                                </div>
+                                ${htmlWhatsApp}
                             </div>
                         `;
                     });
-                })
-                .catch(err => {
-                    console.error("Erro:", err);
-                    lista.innerHTML = `
-                        <div class="bg-red-950/50 border border-red-900 rounded-xl p-5 shadow-md text-center">
-                            <p class="text-red-400">Erro ao carregar a agenda. Verifique se o backend Python está a rodar.</p>
-                        </div>`;
                 });
+
+            // --- Lógica para Bloquear Horário Manualmente ---
+            const btnBloquear = document.getElementById('btn_bloquear');
+            if(btnBloquear) {
+                btnBloquear.addEventListener('click', () => {
+                    const dataVal = document.getElementById('data_bloqueio').value;
+                    const inicioVal = document.getElementById('inicio_bloqueio').value;
+                    const fimVal = document.getElementById('fim_bloqueio').value;
+
+                    if(!dataVal || !inicioVal || !fimVal) {
+                        alert('Por favor, preencha a data e os horários de início e fim do bloqueio.');
+                        return;
+                    }
+
+                    fetch('http://127.0.0.1:5000/api/admin/bloquear', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ data: dataVal, hora_inicio: inicioVal, hora_fim: fimVal })
+                    })
+                    .then(response => response.json())
+                    .then(res => {
+                        alert(res.mensagem);
+                        window.location.reload(); // Recarrega a página para o bloqueio aparecer na lista
+                    })
+                    .catch(err => console.error("Erro ao bloquear:", err));
+                });
+            }
         });
     </script>
 </body>

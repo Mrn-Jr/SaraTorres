@@ -103,19 +103,23 @@ def agendar_servico():
     return jsonify({"mensagem": f"Sucesso! O agendamento de {nome} foi gravado."}), 201
 
 # --------------------------------------------------------
-# ROTA DA ADMINISTRADORA (Painel de Gestão)
+# ROTAS DA ADMINISTRADORA (Painel de Gestão)
 # --------------------------------------------------------
 @app.route('/api/admin/agendamentos', methods=['GET'])
 def listar_agendamentos():
     conexao = conectar_db()
     cursor = conexao.cursor()
     
+    # O LEFT JOIN e IFNULL permitem listar os bloqueios que não têm cliente associado
     cursor.execute('''
-        SELECT a.id_agendamento, c.nome, c.telefone_whatsapp, s.nome_servico,
+        SELECT a.id_agendamento, 
+               IFNULL(c.nome, 'Bloqueio Manual') as nome, 
+               c.telefone_whatsapp, 
+               IFNULL(s.nome_servico, 'Pausa / Imprevisto') as nome_servico,
                a.data_hora_inicio, a.data_hora_fim, a.status
         FROM Agendamentos a
-        JOIN Clientes c ON a.id_cliente = c.id_cliente
-        JOIN Servicos s ON a.id_servico = s.id_servico
+        LEFT JOIN Clientes c ON a.id_cliente = c.id_cliente
+        LEFT JOIN Servicos s ON a.id_servico = s.id_servico
         ORDER BY a.data_hora_inicio ASC
     ''')
     
@@ -123,6 +127,30 @@ def listar_agendamentos():
     conexao.close()
     
     return jsonify({"agendamentos": agendamentos})
+
+@app.route('/api/admin/bloquear', methods=['POST'])
+def bloquear_horario():
+    dados = request.get_json()
+    data = dados.get('data')
+    hora_inicio = dados.get('hora_inicio')
+    hora_fim = dados.get('hora_fim')
+
+    inicio_dt = f"{data} {hora_inicio}:00"
+    fim_dt = f"{data} {hora_fim}:00"
+
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+    
+    # Inserimos na tabela central de calendário com valores NULOS para cliente e serviço
+    cursor.execute('''
+        INSERT INTO Agendamentos (id_cliente, id_servico, data_hora_inicio, data_hora_fim, status)
+        VALUES (NULL, NULL, ?, ?, 'bloqueado')
+    ''', (inicio_dt, fim_dt))
+    
+    conexao.commit()
+    conexao.close()
+
+    return jsonify({"mensagem": "Horário bloqueado com sucesso na sua agenda!"}), 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
