@@ -161,5 +161,18 @@ def atualizar_servico(id_servico):
     conexao.close()
     return jsonify({"mensagem": "Serviço atualizado com sucesso!"}), 200
 
+@app.route('/api/admin/servicos/<int:id_servico>', methods=['DELETE'])
+def excluir_servico(id_servico):
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+    # Usamos o 'status_ativo' definido na modelagem para esconder o serviço sem quebrar a base de dados
+    cursor.execute('''
+        UPDATE Servicos SET status_ativo = 0
+        WHERE id_servico = ?
+    ''', (id_servico,))
+    conexao.commit()
+    conexao.close()
+    return jsonify({"mensagem": "Serviço excluído com sucesso do seu catálogo!"}), 200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

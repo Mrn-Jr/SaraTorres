@@ -175,9 +175,14 @@
                                     <h3 class="text-lg font-bold text-white">${s.nome_servico}</h3>
                                     <p class="text-zinc-500 text-sm mt-0.5">${s.duracao_minutos} min &bull; €${s.preco}</p>
                                 </div>
-                                <button onclick="abrirModalServico(${s.id_servico}, '${s.nome_servico}', ${s.duracao_minutos}, ${s.preco})" class="border border-zinc-700 text-zinc-300 px-4 py-1.5 rounded-lg text-sm hover:bg-zinc-800 transition-colors">
-                                    Editar
-                                </button>
+                                <div class="flex gap-2">
+                                    <button onclick="abrirModalServico(${s.id_servico}, '${s.nome_servico}', ${s.duracao_minutos}, ${s.preco})" class="border border-zinc-700 text-zinc-300 px-4 py-1.5 rounded-lg text-sm hover:bg-zinc-800 transition-colors">
+                                        Editar
+                                    </button>
+                                    <button onclick="excluirServico(${s.id_servico})" class="border border-red-900 text-red-500 px-4 py-1.5 rounded-lg text-sm hover:bg-red-950 transition-colors">
+                                        Excluir
+                                    </button>
+                                </div>
                             </div>`;
                     });
                 });
@@ -195,6 +200,24 @@
         function fecharModalServico() {
             document.getElementById('modal-servico').classList.add('hidden');
         }
+
+        function excluirServico(id) {
+            // Pede uma confirmação à administradora para evitar cliques acidentais
+            if(confirm("Tem certeza que deseja excluir este serviço do seu catálogo?")) {
+                // Aqui usamos as crases simples (backticks) corretas e o ${id} sem a barra invertida!
+                fetch(`http://127.0.0.1:5000/api/admin/servicos/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.mensagem);
+                    carregarServicos(); // Atualiza a lista automaticamente
+                })
+                .catch(err => console.error("Erro ao excluir:", err));
+            }
+        }
+
+        
     </script>
 </body>
 </html>
