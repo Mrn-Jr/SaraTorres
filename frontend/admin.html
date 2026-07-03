@@ -6,7 +6,6 @@
     <title>Painel de Gestão - Estética</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Fundo a simular a textura de mármore escuro com veios dourados da imagem aprovada */
         body {
             background-color: #09090b;
             background-image: radial-gradient(circle at 15% 50%, rgba(202, 138, 4, 0.05), transparent 25%),
@@ -17,30 +16,21 @@
 <body class="text-gray-200 min-h-screen p-4 md:p-8 font-sans">
     
     <div class="max-w-xl mx-auto space-y-6">
-        
-        <!-- Cabeçalho Principal -->
         <header class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-5 flex justify-between items-center shadow-lg backdrop-blur-sm">
             <h1 class="text-2xl font-black text-yellow-500 tracking-wide drop-shadow-md">Painel de Gestão</h1>
             <button class="text-zinc-400 hover:text-white text-sm font-medium transition-colors">Sair</button>
         </header>
 
-        <!-- Separador Agenda de Hoje -->
+        <!-- Agenda -->
         <div class="inline-block bg-zinc-950/80 border border-zinc-800 rounded-lg px-6 py-3 shadow-lg">
             <h2 class="text-lg font-bold text-white">Agenda de Hoje</h2>
         </div>
+        <div id="lista-agendamentos" class="space-y-4"></div>
 
-        <!-- Lista de Agendamentos (Onde a mágica acontece!) -->
-        <div id="lista-agendamentos" class="space-y-4">
-            <!-- Texto de carregamento enquanto o Python processa -->
-            <p class="text-zinc-500 animate-pulse bg-zinc-900/90 border border-zinc-800 rounded-xl p-5">A carregar a sua agenda do banco de dados...</p>
-        </div>
-
-        <!-- Secção: Bloquear Horário -->
+        <!-- Bloquear Horário -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
             <h2 class="text-xl font-bold text-yellow-500 mb-1">Bloquear Horário</h2>
-            <p class="text-zinc-400 text-sm mb-4">Adicione bloqueios manuais para imprevistos ou pausas.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 mt-4">
                 <div>
                     <label class="block text-zinc-300 text-xs mb-1">Data</label>
                     <input type="date" id="data_bloqueio" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
@@ -54,106 +44,157 @@
                     <input type="time" id="fim_bloqueio" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
                 </div>
             </div>
-            
-            <button id="btn_bloquear" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
-                Aplicar Bloqueio
-            </button>
+            <button id="btn_bloquear" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">Aplicar Bloqueio</button>
         </div>
 
-        <!-- Secção: Serviços -->
-        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md flex justify-between items-center">
+        <!-- Gestão de Serviços -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md flex justify-between items-center mt-8">
             <h2 class="text-xl font-bold text-white">Serviços</h2>
-            <button class="text-yellow-500 font-semibold hover:text-yellow-400">+ Novo</button>
+            <button onclick="abrirModalServico()" class="text-yellow-500 font-semibold hover:text-yellow-400">+ Novo</button>
         </div>
-
+        <div id="lista-servicos" class="space-y-3 mb-10"></div>
     </div>
 
-    <!-- O Cérebro da Interface: JavaScript -->
+    <!-- Modal de Serviço (Escondido) -->
+    <div id="modal-servico" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex justify-center items-center z-50">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-11/12 max-w-md shadow-2xl">
+            <h2 id="modal-titulo" class="text-xl font-bold text-yellow-500 mb-4">Novo Serviço</h2>
+            <input type="hidden" id="servico_id">
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-zinc-300 text-xs mb-1">Nome do Serviço</label>
+                    <input type="text" id="servico_nome" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-zinc-300 text-xs mb-1">Duração (minutos)</label>
+                        <input type="number" id="servico_duracao" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                    </div>
+                    <div>
+                        <label class="block text-zinc-300 text-xs mb-1">Preço (€)</label>
+                        <input type="number" step="0.5" id="servico_preco" class="w-full bg-black border border-zinc-800 rounded-lg p-2.5 text-zinc-300 focus:outline-none focus:border-yellow-600">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="fecharModalServico()" class="text-zinc-400 hover:text-white px-4 py-2 font-medium">Cancelar</button>
+                <button id="btn_salvar_servico" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg transition-colors shadow-md">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const lista = document.getElementById('lista-agendamentos');
-            
-            // --- Lógica para Listar a Agenda ---
-            fetch('http://127.0.0.1:5000/api/admin/agendamentos')
-                .then(response => response.json())
-                .then(data => {
-                    lista.innerHTML = ''; 
+            carregarAgenda();
+            carregarServicos();
 
+            // Bloquear Horário
+            document.getElementById('btn_bloquear').addEventListener('click', () => {
+                const dataVal = document.getElementById('data_bloqueio').value;
+                const inicioVal = document.getElementById('inicio_bloqueio').value;
+                const fimVal = document.getElementById('fim_bloqueio').value;
+
+                if(!dataVal || !inicioVal || !fimVal) return alert('Preencha todos os campos do bloqueio.');
+
+                fetch('http://127.0.0.1:5000/api/admin/bloquear', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: dataVal, hora_inicio: inicioVal, hora_fim: fimVal })
+                }).then(() => window.location.reload());
+            });
+
+            // Salvar Serviço (Criar ou Editar)
+            document.getElementById('btn_salvar_servico').addEventListener('click', () => {
+                const id = document.getElementById('servico_id').value;
+                const nome = document.getElementById('servico_nome').value;
+                const duracao = document.getElementById('servico_duracao').value;
+                const preco = document.getElementById('servico_preco').value;
+
+                if(!nome || !duracao || !preco) return alert('Preencha todos os campos do serviço.');
+
+                const url = id ? `http://127.0.0.1:5000/api/admin/servicos/${id}` : 'http://127.0.0.1:5000/api/admin/servicos';
+                const method = id ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, duracao: parseInt(duracao), preco: parseFloat(preco) })
+                }).then(() => {
+                    fecharModalServico();
+                    carregarServicos();
+                });
+            });
+        });
+
+        function carregarAgenda() {
+            fetch('http://127.0.0.1:5000/api/admin/agendamentos')
+                .then(r => r.json())
+                .then(data => {
+                    const lista = document.getElementById('lista-agendamentos');
+                    lista.innerHTML = ''; 
                     if (data.agendamentos.length === 0) {
-                        lista.innerHTML = `
-                            <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md text-center">
-                                <p class="text-zinc-400 italic">A sua agenda está livre neste momento.</p>
-                            </div>`;
+                        lista.innerHTML = `<div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 text-center"><p class="text-zinc-400 italic">Agenda livre.</p></div>`;
                         return;
                     }
-                    
-                    data.agendamentos.forEach(agendamento => {
-                        const horaInicioObj = new Date(agendamento.data_hora_inicio);
-                        const horaFimObj = new Date(agendamento.data_hora_fim);
-                        const horaInicio = horaInicioObj.toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
-                        const horaFim = horaFimObj.toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
-                        const dataFormatada = horaInicioObj.toLocaleDateString('pt-PT');
+                    data.agendamentos.forEach(ag => {
+                        const hInicio = new Date(ag.data_hora_inicio).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                        const hFim = new Date(ag.data_hora_fim).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                        const dt = new Date(ag.data_hora_inicio).toLocaleDateString('pt-PT');
+                        const corStatus = ag.status === 'confirmado' ? 'text-yellow-500' : (ag.status === 'bloqueado' ? 'text-red-500' : 'text-zinc-500');
 
-                        let corStatus = agendamento.status === 'confirmado' ? 'text-yellow-500' : (agendamento.status === 'bloqueado' ? 'text-red-500' : 'text-zinc-500');
-
-                        // Lógica protegida do WhatsApp (só aparece se houver número de cliente)
-                        let htmlWhatsApp = '';
-                        if (agendamento.telefone_whatsapp) {
-                            let numeroLimpo = agendamento.telefone_whatsapp.replace(/\D/g, '');
-                            if (numeroLimpo.length === 10 || numeroLimpo.length === 11) { numeroLimpo = '55' + numeroLimpo; } 
-                            else if (numeroLimpo.length === 9) { numeroLimpo = '351' + numeroLimpo; }
-                            
-                            htmlWhatsApp = `
-                                <div class="mt-3 pt-3 border-t border-zinc-800/50">
-                                    <a href="https://wa.me/${numeroLimpo}" target="_blank" class="text-sm font-medium text-green-500 hover:text-green-400 transition-colors">
-                                        Falar no WhatsApp
-                                    </a>
-                                </div>`;
+                        let htmlWpp = '';
+                        if (ag.telefone_whatsapp) {
+                            let num = ag.telefone_whatsapp.replace(/\D/g, '');
+                            if (num.length >= 10) num = '55' + num; else if (num.length === 9) num = '351' + num;
+                            htmlWpp = `<div class="mt-3 pt-3 border-t border-zinc-800/50"><a href="https://wa.me/${num}" target="_blank" class="text-sm font-medium text-green-500 hover:text-green-400">Falar no WhatsApp</a></div>`;
                         }
-
                         lista.innerHTML += `
                             <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md">
                                 <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-xl font-bold text-white tracking-wide">${horaInicio} - ${horaFim}</h3>
-                                    <span class="${corStatus} text-sm font-semibold capitalize">${agendamento.status}</span>
+                                    <h3 class="text-xl font-bold text-white">${hInicio} - ${hFim}</h3>
+                                    <span class="${corStatus} text-sm font-semibold capitalize">${ag.status}</span>
                                 </div>
-                                <p class="text-zinc-300">Cliente/Evento: <span class="text-white font-medium">${agendamento.nome}</span></p>
-                                <p class="text-zinc-500 text-sm mt-0.5">
-                                    Serviço: ${agendamento.nome_servico} | Data: ${dataFormatada}
-                                </p>
-                                ${htmlWhatsApp}
-                            </div>
-                        `;
+                                <p class="text-zinc-300">Cliente/Evento: <span class="text-white font-medium">${ag.nome}</span></p>
+                                <p class="text-zinc-500 text-sm mt-0.5">${ag.nome_servico} | Data: ${dt}</p>
+                                ${htmlWpp}
+                            </div>`;
                     });
                 });
+        }
 
-            // --- Lógica para Bloquear Horário Manualmente ---
-            const btnBloquear = document.getElementById('btn_bloquear');
-            if(btnBloquear) {
-                btnBloquear.addEventListener('click', () => {
-                    const dataVal = document.getElementById('data_bloqueio').value;
-                    const inicioVal = document.getElementById('inicio_bloqueio').value;
-                    const fimVal = document.getElementById('fim_bloqueio').value;
-
-                    if(!dataVal || !inicioVal || !fimVal) {
-                        alert('Por favor, preencha a data e os horários de início e fim do bloqueio.');
-                        return;
-                    }
-
-                    fetch('http://127.0.0.1:5000/api/admin/bloquear', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ data: dataVal, hora_inicio: inicioVal, hora_fim: fimVal })
-                    })
-                    .then(response => response.json())
-                    .then(res => {
-                        alert(res.mensagem);
-                        window.location.reload(); // Recarrega a página para o bloqueio aparecer na lista
-                    })
-                    .catch(err => console.error("Erro ao bloquear:", err));
+        function carregarServicos() {
+            fetch('http://127.0.0.1:5000/api/servicos')
+                .then(r => r.json())
+                .then(data => {
+                    const lista = document.getElementById('lista-servicos');
+                    lista.innerHTML = '';
+                    data.servicos.forEach(s => {
+                        lista.innerHTML += `
+                            <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">${s.nome_servico}</h3>
+                                    <p class="text-zinc-500 text-sm mt-0.5">${s.duracao_minutos} min &bull; €${s.preco}</p>
+                                </div>
+                                <button onclick="abrirModalServico(${s.id_servico}, '${s.nome_servico}', ${s.duracao_minutos}, ${s.preco})" class="border border-zinc-700 text-zinc-300 px-4 py-1.5 rounded-lg text-sm hover:bg-zinc-800 transition-colors">
+                                    Editar
+                                </button>
+                            </div>`;
+                    });
                 });
-            }
-        });
+        }
+
+        function abrirModalServico(id = '', nome = '', duracao = '', preco = '') {
+            document.getElementById('modal-titulo').innerText = id ? 'Editar Serviço' : 'Novo Serviço';
+            document.getElementById('servico_id').value = id;
+            document.getElementById('servico_nome').value = nome;
+            document.getElementById('servico_duracao').value = duracao;
+            document.getElementById('servico_preco').value = preco;
+            document.getElementById('modal-servico').classList.remove('hidden');
+        }
+
+        function fecharModalServico() {
+            document.getElementById('modal-servico').classList.add('hidden');
+        }
     </script>
 </body>
 </html>

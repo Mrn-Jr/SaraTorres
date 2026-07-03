@@ -6,17 +6,12 @@ import sqlite3
 app = Flask(__name__)
 CORS(app)
 
-# --------------------------------------------------------
-# FUNÇÃO ESSENCIAL: A "ponte" para a Base de Dados
-# --------------------------------------------------------
 def conectar_db():
     conexao = sqlite3.connect('backend/estetica.db')
     conexao.row_factory = sqlite3.Row
     return conexao
 
-# --------------------------------------------------------
-# ROTAS DOS CLIENTES (Agendar e Ver Serviços)
-# --------------------------------------------------------
+# --- ROTAS DO CLIENTE ---
 @app.route('/api/servicos', methods=['GET'])
 def listar_servicos():
     conexao = conectar_db()
@@ -99,33 +94,24 @@ def agendar_servico():
 
     conexao.commit()
     conexao.close()
-
     return jsonify({"mensagem": f"Sucesso! O agendamento de {nome} foi gravado."}), 201
 
-# --------------------------------------------------------
-# ROTAS DA ADMINISTRADORA (Painel de Gestão)
-# --------------------------------------------------------
+# --- ROTAS DA ADMINISTRADORA ---
 @app.route('/api/admin/agendamentos', methods=['GET'])
 def listar_agendamentos():
     conexao = conectar_db()
     cursor = conexao.cursor()
-    
-    # O LEFT JOIN e IFNULL permitem listar os bloqueios que não têm cliente associado
     cursor.execute('''
-        SELECT a.id_agendamento, 
-               IFNULL(c.nome, 'Bloqueio Manual') as nome, 
-               c.telefone_whatsapp, 
-               IFNULL(s.nome_servico, 'Pausa / Imprevisto') as nome_servico,
+        SELECT a.id_agendamento, IFNULL(c.nome, 'Bloqueio Manual') as nome, 
+               c.telefone_whatsapp, IFNULL(s.nome_servico, 'Pausa / Imprevisto') as nome_servico,
                a.data_hora_inicio, a.data_hora_fim, a.status
         FROM Agendamentos a
         LEFT JOIN Clientes c ON a.id_cliente = c.id_cliente
         LEFT JOIN Servicos s ON a.id_servico = s.id_servico
         ORDER BY a.data_hora_inicio ASC
     ''')
-    
     agendamentos = [dict(linha) for linha in cursor.fetchall()]
     conexao.close()
-    
     return jsonify({"agendamentos": agendamentos})
 
 @app.route('/api/admin/bloquear', methods=['POST'])
@@ -140,17 +126,40 @@ def bloquear_horario():
 
     conexao = conectar_db()
     cursor = conexao.cursor()
-    
-    # Inserimos na tabela central de calendário com valores NULOS para cliente e serviço
     cursor.execute('''
         INSERT INTO Agendamentos (id_cliente, id_servico, data_hora_inicio, data_hora_fim, status)
         VALUES (NULL, NULL, ?, ?, 'bloqueado')
     ''', (inicio_dt, fim_dt))
-    
     conexao.commit()
     conexao.close()
+    return jsonify({"mensagem": "Horário bloqueado com sucesso!"}), 201
 
-    return jsonify({"mensagem": "Horário bloqueado com sucesso na sua agenda!"}), 201
+# -- NOVAS ROTAS: GESTÃO DE SERVIÇOS --
+@app.route('/api/admin/servicos', methods=['POST'])
+def criar_servico():
+    dados = request.get_json()
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+    cursor.execute('''
+        INSERT INTO Servicos (nome_servico, duracao_minutos, preco, status_ativo)
+        VALUES (?, ?, ?, 1)
+    ''', (dados['nome'], dados['duracao'], dados['preco']))
+    conexao.commit()
+    conexao.close()
+    return jsonify({"mensagem": "Novo serviço criado com sucesso!"}), 201
+
+@app.route('/api/admin/servicos/<int:id_servico>', methods=['PUT'])
+def atualizar_servico(id_servico):
+    dados = request.get_json()
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+    cursor.execute('''
+        UPDATE Servicos SET nome_servico = ?, duracao_minutos = ?, preco = ?
+        WHERE id_servico = ?
+    ''', (dados['nome'], dados['duracao'], dados['preco'], id_servico))
+    conexao.commit()
+    conexao.close()
+    return jsonify({"mensagem": "Serviço atualizado com sucesso!"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
