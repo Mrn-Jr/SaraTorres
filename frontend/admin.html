@@ -27,9 +27,9 @@
         </div>
         <div id="lista-agendamentos" class="space-y-4"></div>
 
-        <!-- Bloquear Horário -->
+        <!-- Bloquear Horário Manual -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
-            <h2 class="text-xl font-bold text-yellow-500 mb-1">Bloquear Horário</h2>
+            <h2 class="text-xl font-bold text-yellow-500 mb-1">Bloquear Horário (Imprevistos)</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 mt-4">
                 <div>
                     <label class="block text-zinc-300 text-xs mb-1">Data</label>
@@ -45,6 +45,45 @@
                 </div>
             </div>
             <button id="btn_bloquear" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">Aplicar Bloqueio</button>
+        </div>
+
+        <!-- NOVO: Configurações de Expediente e Almoço -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
+            <h2 class="text-xl font-bold text-yellow-500 mb-1">Configurar Horário Padrão</h2>
+            <p class="text-zinc-400 text-sm mb-4">Ajuste a sua hora de abertura, fecho e as suas pausas de almoço.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bg-black p-4 rounded-lg border border-zinc-800">
+                    <h3 class="text-zinc-300 font-semibold mb-3">Expediente (Trabalho)</h3>
+                    <div class="flex gap-2">
+                        <div class="w-1/2">
+                            <label class="block text-zinc-500 text-xs mb-1">Abertura</label>
+                            <input type="time" id="config_abertura" value="09:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-zinc-500 text-xs mb-1">Fecho</label>
+                            <input type="time" id="config_fecho" value="18:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-black p-4 rounded-lg border border-zinc-800">
+                    <h3 class="text-zinc-300 font-semibold mb-3">Pausa (Almoço)</h3>
+                    <div class="flex gap-2">
+                        <div class="w-1/2">
+                            <label class="block text-zinc-500 text-xs mb-1">Início</label>
+                            <input type="time" id="config_almoco_inicio" value="13:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-zinc-500 text-xs mb-1">Fim</label>
+                            <input type="time" id="config_almoco_fim" value="14:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="salvarConfiguracoes()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition-colors border border-zinc-700 shadow-md">
+                Salvar Horários
+            </button>
         </div>
 
         <!-- Gestão de Serviços -->
@@ -87,13 +126,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             carregarAgenda();
             carregarServicos();
+            carregarConfiguracoes(); // Carrega os horários salvos ao abrir o painel
 
-            // Bloquear Horário
+            // Bloquear Horário Manual
             document.getElementById('btn_bloquear').addEventListener('click', () => {
                 const dataVal = document.getElementById('data_bloqueio').value;
                 const inicioVal = document.getElementById('inicio_bloqueio').value;
                 const fimVal = document.getElementById('fim_bloqueio').value;
-
                 if(!dataVal || !inicioVal || !fimVal) return alert('Preencha todos os campos do bloqueio.');
 
                 fetch('http://127.0.0.1:5000/api/admin/bloquear', {
@@ -103,7 +142,7 @@
                 }).then(() => window.location.reload());
             });
 
-            // Salvar Serviço (Criar ou Editar)
+            // Salvar Serviço
             document.getElementById('btn_salvar_servico').addEventListener('click', () => {
                 const id = document.getElementById('servico_id').value;
                 const nome = document.getElementById('servico_nome').value;
@@ -125,6 +164,42 @@
                 });
             });
         });
+
+        // NOVO: Funções de Configuração de Horários
+        function carregarConfiguracoes() {
+            fetch('http://127.0.0.1:5000/api/admin/disponibilidade')
+                .then(r => r.json())
+                .then(data => {
+                    data.regras.forEach(regra => {
+                        if(regra.tipo_regra === 'trabalho') {
+                            document.getElementById('config_abertura').value = regra.hora_inicio;
+                            document.getElementById('config_fecho').value = regra.hora_fim;
+                        } else if (regra.tipo_regra === 'bloqueio') {
+                            document.getElementById('config_almoco_inicio').value = regra.hora_inicio;
+                            document.getElementById('config_almoco_fim').value = regra.hora_fim;
+                        }
+                    });
+                });
+        }
+
+        function salvarConfiguracoes() {
+            const payload = {
+                abertura: document.getElementById('config_abertura').value,
+                fecho: document.getElementById('config_fecho').value,
+                almoco_inicio: document.getElementById('config_almoco_inicio').value,
+                almoco_fim: document.getElementById('config_almoco_fim').value
+            };
+
+            fetch('http://127.0.0.1:5000/api/admin/disponibilidade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                alert(data.mensagem);
+            });
+        }
 
         function carregarAgenda() {
             fetch('http://127.0.0.1:5000/api/admin/agendamentos')
@@ -188,6 +263,14 @@
                 });
         }
 
+        function excluirServico(id) {
+            if(confirm("Tem certeza que deseja excluir este serviço do seu catálogo?")) {
+                fetch(`http://127.0.0.1:5000/api/admin/servicos/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => { alert(data.mensagem); carregarServicos(); })
+            }
+        }
+
         function abrirModalServico(id = '', nome = '', duracao = '', preco = '') {
             document.getElementById('modal-titulo').innerText = id ? 'Editar Serviço' : 'Novo Serviço';
             document.getElementById('servico_id').value = id;
@@ -200,24 +283,6 @@
         function fecharModalServico() {
             document.getElementById('modal-servico').classList.add('hidden');
         }
-
-        function excluirServico(id) {
-            // Pede uma confirmação à administradora para evitar cliques acidentais
-            if(confirm("Tem certeza que deseja excluir este serviço do seu catálogo?")) {
-                // Aqui usamos as crases simples (backticks) corretas e o ${id} sem a barra invertida!
-                fetch(`http://127.0.0.1:5000/api/admin/servicos/${id}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.mensagem);
-                    carregarServicos(); // Atualiza a lista automaticamente
-                })
-                .catch(err => console.error("Erro ao excluir:", err));
-            }
-        }
-
-        
     </script>
 </body>
 </html>
