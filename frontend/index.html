@@ -92,7 +92,7 @@
             </div>
 
             <!-- Botão para fechar e recarregar a página -->
-            <button onclick="fecharModalSucesso()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
+            <button type="button" onclick="fecharModalSucesso()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
                 Entendido
             </button>
         </div>
@@ -171,8 +171,8 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Removemos o velho alert() e chamamos o nosso novo Cartão Premium!
-                    mostrarModalSucesso(data.mensagem); 
+                    // Esqueça o modal! Agora redirecionamos a cliente para a página de sucesso
+                    window.location.href = "sucesso.html"; 
                 })
                 .catch(err => {
                     console.error("Erro:", err);
