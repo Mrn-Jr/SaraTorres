@@ -70,8 +70,13 @@ def buscar_horarios():
         
         conflito_agenda = False
         for m in marcacoes_do_dia:
-            m_inicio = datetime.strptime(m['data_hora_inicio'].split(" ")[:5], "%H:%M")
-            m_fim = datetime.strptime(m['data_hora_fim'].split(" ")[:5], "%H:%M")
+            # Pegamos o índice [1] (a hora) após o split e fatiamos os 5 primeiros caracteres
+            hora_inicio_str = m['data_hora_inicio'].split(" ")[1][:5]
+            hora_fim_str = m['data_hora_fim'].split(" ")[1][:5]
+            
+            m_inicio = datetime.strptime(hora_inicio_str, "%H:%M")
+            m_fim = datetime.strptime(hora_fim_str, "%H:%M")
+            
             if hora_atual < m_fim and hora_fim_estimada > m_inicio:
                 conflito_agenda = True
                 break
@@ -151,6 +156,20 @@ def bloquear_horario():
     conexao.commit()
     conexao.close()
     return jsonify({"mensagem": "Horário bloqueado com sucesso!"}), 201
+
+
+@app.route('/api/admin/agendamentos/<int:id_agendamento>', methods=['DELETE'])
+def excluir_agendamento(id_agendamento):
+    conexao = conectar_db()
+    cursor = conexao.cursor()
+    
+    # Apaga o agendamento ou bloqueio da base de dados definitivamente
+    cursor.execute("DELETE FROM Agendamentos WHERE id_agendamento = ?", (id_agendamento,))
+    
+    conexao.commit()
+    conexao.close()
+    return jsonify({"mensagem": "Registo removido com sucesso! O horário está livre novamente."}), 200
+
 
 # --- ROTAS DE SERVIÇOS ---
 @app.route('/api/admin/servicos', methods=['POST'])

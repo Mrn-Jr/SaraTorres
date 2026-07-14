@@ -68,6 +68,36 @@
             </form>
         </div>
         
+
+    <!-- Modal de Agendamento com Sucesso (Escondido por padrão) -->
+    <div id="modal-sucesso" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-sm shadow-2xl text-center transform transition-all">
+            
+            <!-- Ícone de Sucesso animado -->
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-900/30 text-green-500 mb-4 border border-green-900/50">
+                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            
+            <h2 class="text-2xl font-black text-yellow-500 tracking-wide mb-2">Agendado com Sucesso!</h2>
+            <p id="texto-sucesso" class="text-zinc-300 text-sm mb-6">O seu horário foi reservado na nossa agenda.</p>
+            
+            <!-- Caixa de Aviso sobre Cancelamento -->
+            <div class="bg-black border border-zinc-800 rounded-lg p-4 mb-6 text-left">
+                <p class="text-zinc-400 text-xs leading-relaxed">
+                    <span class="text-yellow-500 font-bold block mb-1">Precisa de cancelar ou alterar?</span>
+                    Caso ocorra algum imprevisto e precise de cancelar o seu horário, por favor, avise a profissional entrando em contacto direto connosco (via WhatsApp) com a maior antecedência possível.
+                </p>
+            </div>
+
+            <!-- Botão para fechar e recarregar a página -->
+            <button onclick="fecharModalSucesso()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
+                Entendido
+            </button>
+        </div>
+    </div>
+
     </main>
 
     <!-- AQUI ENTRA O JAVASCRIPT QUE COMUNICA COM O BACKEND EM PYTHON -->
@@ -141,12 +171,27 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.mensagem);
-                    form.reset();
-                    horarioSelect.innerHTML = '<option value="" class="bg-zinc-900">Selecione uma data primeiro...</option>';
-                    horarioSelect.disabled = true;
+                    // Removemos o velho alert() e chamamos o nosso novo Cartão Premium!
+                    mostrarModalSucesso(data.mensagem); 
+                })
+                .catch(err => {
+                    console.error("Erro:", err);
+                    alert("Ocorreu um erro ao agendar.");
                 });
             });
+
+
+            // Função para mostrar o cartão de sucesso
+            function mostrarModalSucesso(mensagem) {
+                document.getElementById('texto-sucesso').innerText = mensagem;
+                document.getElementById('modal-sucesso').classList.remove('hidden');
+            }
+
+            // Função para fechar o cartão e atualizar a página limpa
+            function fecharModalSucesso() {
+                document.getElementById('modal-sucesso').classList.add('hidden');
+                window.location.reload(); // Recarrega a página para atualizar os horários ocupados
+            }
         });
     </script>
 </body>
