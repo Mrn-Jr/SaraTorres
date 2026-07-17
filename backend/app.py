@@ -63,10 +63,21 @@ def buscar_horarios():
     horarios_livres = []
     hora_atual = hora_abertura
 
+    # 1. Cria a trava de segurança de 2 horas a partir do momento ATUAL
+    limite_antecedencia = datetime.now() + timedelta(hours=2)
+
     # Calcula a disponibilidade da agenda impedindo sobreposição e respeitando o almoço configurado
     while hora_atual + timedelta(minutes=duracao) <= hora_fecho:
         hora_fim_estimada = hora_atual + timedelta(minutes=duracao)
         bate_no_almoco = (hora_atual < almoco_fim and hora_fim_estimada > almoco_inicio)
+        
+        # 2. Junta a data que o cliente escolheu com a hora testada no loop
+        # Ex: Transforma data="2026-07-17" e hora="14:00" em "2026-07-17 14:00"
+        str_data_hora_slot = f"{data_escolhida} {hora_atual.strftime('%H:%M')}"
+        data_hora_slot = datetime.strptime(str_data_hora_slot, "%Y-%m-%d %H:%M")
+        
+        # 3. Testa se o horário exato do slot é menor que o nosso limite de 2 horas
+        muito_em_cima = data_hora_slot < limite_antecedencia
         
         conflito_agenda = False
         for m in marcacoes_do_dia:
@@ -81,7 +92,8 @@ def buscar_horarios():
                 conflito_agenda = True
                 break
 
-        if not bate_no_almoco and not conflito_agenda:
+        # 4. A REGRA DE NEGÓCIO ENTRA AQUI: Só adiciona se não bater no almoço, não tiver conflito e NÃO for muito em cima da hora!
+        if not bate_no_almoco and not conflito_agenda and not muito_em_cima:
             horarios_livres.append(hora_atual.strftime("%H:%M"))
 
         hora_atual += timedelta(minutes=30)
