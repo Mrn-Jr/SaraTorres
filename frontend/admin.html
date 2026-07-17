@@ -50,8 +50,21 @@
         <!-- NOVO: Configurações de Expediente e Almoço -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
             <h2 class="text-xl font-bold text-yellow-500 mb-1">Configurar Horário Padrão</h2>
-            <p class="text-zinc-400 text-sm mb-4">Ajuste a sua hora de abertura, fecho e as suas pausas de almoço.</p>
+            <p class="text-zinc-400 text-sm mb-4">Ajuste os dias, a sua hora de abertura, fecho e as suas pausas de almoço.</p>
             
+            <div class="bg-black p-4 rounded-lg border border-zinc-800 mb-4">
+                <h3 class="text-zinc-300 font-semibold mb-3">Dias de Atendimento</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-zinc-300 text-sm">
+                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="1" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Segunda</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="2" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Terça</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="3" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Quarta</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="4" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Quinta</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="5" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Sexta</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="6" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700"> <span>Sábado</span></label>
+                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="0" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700"> <span>Domingo</span></label>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div class="bg-black p-4 rounded-lg border border-zinc-800">
                     <h3 class="text-zinc-300 font-semibold mb-3">Expediente (Trabalho)</h3>
@@ -81,8 +94,9 @@
                     </div>
                 </div>
             </div>
+            
             <button onclick="salvarConfiguracoes()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition-colors border border-zinc-700 shadow-md">
-                Salvar Horários
+                Salvar Horários e Dias
             </button>
         </div>
 
@@ -183,13 +197,26 @@
         }
 
         function salvarConfiguracoes() {
+            // 1. Captura os dias marcados no HTML (retorna uma lista de números)
+            const checkboxes = document.querySelectorAll('input[name="dias"]:checked');
+            const diasSelecionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            // 2. Validação: Impede de salvar se a profissional esquecer de marcar os dias
+            if (diasSelecionados.length === 0) {
+                alert("Por favor, selecione pelo menos um dia da semana para trabalhar.");
+                return;
+            }
+
+            // 3. Monta o pacote de dados (payload) alinhado com o que o Python espera
             const payload = {
-                abertura: document.getElementById('config_abertura').value,
-                fecho: document.getElementById('config_fecho').value,
+                dias_semana: diasSelecionados, // NOVO: Envia a lista de dias (ex: [1, 2, 3])
+                hora_abertura: document.getElementById('config_abertura').value,
+                hora_fecho: document.getElementById('config_fecho').value,
                 almoco_inicio: document.getElementById('config_almoco_inicio').value,
                 almoco_fim: document.getElementById('config_almoco_fim').value
             };
 
+            // 4. Envia os dados para a API (com a rota correta do admin)
             fetch('http://127.0.0.1:5000/api/admin/disponibilidade', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -197,7 +224,11 @@
             })
             .then(r => r.json())
             .then(data => {
-                alert(data.mensagem);
+                alert(data.mensagem); // Mostra o aviso de sucesso!
+            })
+            .catch(err => {
+                console.error("Erro ao salvar:", err);
+                alert("Ocorreu um erro ao salvar as configurações.");
             });
         }
 

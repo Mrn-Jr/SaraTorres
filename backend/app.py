@@ -26,6 +26,11 @@ def buscar_horarios():
     data_escolhida = request.args.get('data')
     id_servico = int(request.args.get('id_servico', 1))
 
+    # 1. NOVO: Converte a data escolhida e descobre o dia da semana
+    data_obj = datetime.strptime(data_escolhida, "%Y-%m-%d")
+    # Converte o padrão do Python (0=Segunda) para o padrão do seu banco (0=Domingo, 1=Segunda... 6=Sábado)
+    dia_da_semana = (data_obj.weekday() + 1) % 7
+
     conexao = conectar_db()
     cursor = conexao.cursor()
 
@@ -34,18 +39,23 @@ def buscar_horarios():
     resultado = cursor.fetchone()
     duracao = resultado['duracao_minutos'] if resultado else 30
 
-    # Busca as marcações e bloqueios daquele dia
+    # Busca as marcações daquele dia
     cursor.execute("SELECT data_hora_inicio, data_hora_fim FROM Agendamentos WHERE date(data_hora_inicio) = ?", (data_escolhida,))
     marcacoes_do_dia = cursor.fetchall()
 
-    # NOVO: Busca os horários dinâmicos da tabela de Disponibilidade
-    cursor.execute("SELECT hora_inicio, hora_fim, tipo_regra FROM Disponibilidade")
+    # 2. ALTERADO: Busca as regras APENAS do dia da semana que a cliente clicou
+    cursor.execute("SELECT hora_inicio, hora_fim, tipo_regra FROM Disponibilidade WHERE dia_semana = ?", (dia_da_semana,))
     regras = cursor.fetchall()
     conexao.close()
 
-    # Valores padrão (caso ainda não tenha configurado no painel)
+    # 3. NOVO (O BLOQUEIO): Se não houver regras nenhumas para este dia, ela não trabalha! Retorna agenda vazia.
+    if not regras:
+        return jsonify({"horarios_disponiveis": []})
+
+    # Inicializa variáveis baseadas nas regras puxadas do banco
     str_abertura, str_fecho = "09:00", "18:00"
-    str_almoco_inicio, str_almoco_fim = "13:00", "14:00"
+    str_almoco_inicio, str_almoco_fim = "00:00", "00:00" 
+    tem_almoco = False
 
     for regra in regras:
         if regra['tipo_regra'] == 'trabalho':
@@ -54,6 +64,7 @@ def buscar_horarios():
         elif regra['tipo_regra'] == 'bloqueio':
             str_almoco_inicio = regra['hora_inicio']
             str_almoco_fim = regra['hora_fim']
+            tem_almoco = True
 
     hora_abertura = datetime.strptime(str_abertura, "%H:%M")
     hora_fecho = datetime.strptime(str_fecho, "%H:%M")
@@ -63,25 +74,28 @@ def buscar_horarios():
     horarios_livres = []
     hora_atual = hora_abertura
 
-    # 1. Cria a trava de segurança de 2 horas a partir do momento ATUAL
+    # Trava de segurança de 2 horas a partir do momento ATUAL
     limite_antecedencia = datetime.now() + timedelta(hours=2)
 
     # Calcula a disponibilidade da agenda impedindo sobreposição e respeitando o almoço configurado
     while hora_atual + timedelta(minutes=duracao) <= hora_fecho:
         hora_fim_estimada = hora_atual + timedelta(minutes=duracao)
-        bate_no_almoco = (hora_atual < almoco_fim and hora_fim_estimada > almoco_inicio)
         
-        # 2. Junta a data que o cliente escolheu com a hora testada no loop
-        # Ex: Transforma data="2026-07-17" e hora="14:00" em "2026-07-17 14:00"
+        # Só valida almoço se ele foi realmente configurado para este dia
+        if tem_almoco:
+            bate_no_almoco = (hora_atual < almoco_fim and hora_fim_estimada > almoco_inicio)
+        else:
+            bate_no_almoco = False
+        
+        # Junta a data escolhida com a hora testada no loop para criar o carimbo de data/hora completo
         str_data_hora_slot = f"{data_escolhida} {hora_atual.strftime('%H:%M')}"
         data_hora_slot = datetime.strptime(str_data_hora_slot, "%Y-%m-%d %H:%M")
         
-        # 3. Testa se o horário exato do slot é menor que o nosso limite de 2 horas
+        # Testa o limite de 2 horas de antecedência
         muito_em_cima = data_hora_slot < limite_antecedencia
         
         conflito_agenda = False
         for m in marcacoes_do_dia:
-            # Pegamos o índice [1] (a hora) após o split e fatiamos os 5 primeiros caracteres
             hora_inicio_str = m['data_hora_inicio'].split(" ")[1][:5]
             hora_fim_str = m['data_hora_fim'].split(" ")[1][:5]
             
@@ -92,7 +106,7 @@ def buscar_horarios():
                 conflito_agenda = True
                 break
 
-        # 4. A REGRA DE NEGÓCIO ENTRA AQUI: Só adiciona se não bater no almoço, não tiver conflito e NÃO for muito em cima da hora!
+        # Só adiciona o horário se passar em todas as regras
         if not bate_no_almoco and not conflito_agenda and not muito_em_cima:
             horarios_livres.append(hora_atual.strftime("%H:%M"))
 
@@ -235,23 +249,43 @@ def obter_disponibilidade():
 @app.route('/api/admin/disponibilidade', methods=['POST'])
 def salvar_disponibilidade():
     dados = request.get_json()
+    
+    # 1. Pega as novas chaves enviadas pelo frontend atualizado
+    dias_semana = dados.get('dias_semana') # Agora é uma lista, ex: [1, 2, 3, 4, 5]
+    hora_abertura = dados.get('hora_abertura')
+    hora_fecho = dados.get('hora_fecho')
+    almoco_inicio = dados.get('almoco_inicio')
+    almoco_fim = dados.get('almoco_fim')
+
+    # Validação de segurança para garantir que a profissional enviou os dados principais
+    if not dias_semana or not hora_abertura or not hora_fecho:
+        return jsonify({"erro": "Dados obrigatórios incompletos"}), 400
+
     conexao = conectar_db()
     cursor = conexao.cursor()
     
-    # Limpa as configurações antigas para regravar as novas
+    # 2. Limpa as configurações antigas para regravar as novas
     cursor.execute("DELETE FROM Disponibilidade")
     
-    # Grava o horário de trabalho
-    cursor.execute("INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) VALUES (0, ?, ?, 'trabalho')", 
-                   (dados['abertura'], dados['fecho']))
-    
-    # Grava o horário de almoço (bloqueio fixo)
-    cursor.execute("INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) VALUES (0, ?, ?, 'bloqueio')", 
-                   (dados['almoco_inicio'], dados['almoco_fim']))
+    # 3. Fazemos um laço (for) para gravar a regra em CADA dia que ela selecionou
+    for dia in dias_semana:
+        # Grava o horário de trabalho (expediente)
+        cursor.execute("""
+            INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) 
+            VALUES (?, ?, ?, 'trabalho')
+        """, (dia, hora_abertura, hora_fecho))
+        
+        # Grava o horário de almoço (bloqueio fixo) apenas se ela preencheu
+        if almoco_inicio and almoco_fim:
+            cursor.execute("""
+                INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) 
+                VALUES (?, ?, ?, 'bloqueio')
+            """, (dia, almoco_inicio, almoco_fim))
     
     conexao.commit()
     conexao.close()
-    return jsonify({"mensagem": "Configurações de horário guardadas com sucesso!"}), 201
+    
+    return jsonify({"mensagem": "Configurações de horários e dias da semana guardadas com sucesso!"}), 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
