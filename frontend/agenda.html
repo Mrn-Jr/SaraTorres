@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Agendamentos Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-zinc-100 font-sans min-h-screen antialiased selection:bg-yellow-500/30">
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-zinc-800 pb-6">
+            <div>
+                <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600 tracking-wide">
+                    Fluxo de Atendimentos
+                </h1>
+                <p class="text-zinc-500 text-sm mt-1">Gerencie seus horários, bloqueios e contatos de clientes.</p>
+            </div>
+            
+            <div class="flex gap-2 w-full md:w-auto">
+                <a href="admin.html" class="flex-1 md:flex-none text-center text-sm bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-medium py-2.5 px-5 rounded-lg border border-zinc-800 transition-all shadow-md">
+                    Configurações
+                </a>
+                <a href="index.html" target="_blank" class="flex-1 md:flex-none text-center text-sm bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-2.5 px-5 rounded-lg transition-all shadow-md">
+                    Ver Site Público
+                </a>
+            </div>
+        </header>
+
+        <main>
+            <div class="mb-2 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-zinc-400 tracking-wide uppercase">Agenda Organizada</h2>
+                <span class="text-xs bg-zinc-900 border border-zinc-800 text-zinc-500 px-3 py-1.5 rounded-md font-bold" id="contador-total">---</span>
+            </div>
+
+            <div id="container-agenda">
+                <div class="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-8 text-center animate-pulse mt-4">
+                    <p class="text-zinc-500 italic">Buscando informações e organizando datas...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function carregarAgenda() {
+            // Nota: Mudar a URL para o seu domínio final da API depois (ex: PythonAnywhere)
+            fetch('http://127.0.0.1:5000/api/admin/agendamentos')
+                .then(r => r.json())
+                .then(data => {
+                    const mainContainer = document.getElementById('container-agenda');
+                    const contador = document.getElementById('contador-total');
+                    
+                    // Atualiza o contador de registros encontrados
+                    contador.innerText = `${data.agendamentos.length} agendamentos`;
+
+                    if (data.agendamentos.length === 0) {
+                        mainContainer.innerHTML = `
+                            <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-10 text-center mt-6">
+                                <svg class="w-12 h-12 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p class="text-zinc-400 font-medium text-lg">Agenda Livre</p>
+                                <p class="text-zinc-600 text-sm mt-1">Nenhum atendimento ou bloqueio registrado para os próximos dias.</p>
+                            </div>`;
+                        return;
+                    }
+
+                    // -----------------------------------------------------------
+                    // 1. AGRUPAR OS AGENDAMENTOS POR DATA
+                    // -----------------------------------------------------------
+                    const gruposPorData = {};
+
+                    data.agendamentos.forEach(ag => {
+                        const dataObj = new Date(ag.data_hora_inicio);
+                        
+                        // Cria um texto elegante para o dia (Ex: "Segunda-feira, 20 de julho")
+                        const opcoesFormatacao = { weekday: 'long', day: 'numeric', month: 'long' };
+                        let dataTexto = dataObj.toLocaleDateString('pt-PT', opcoesFormatacao);
+                        
+                        // Se for uma data que ainda não existe no grupo, cria um espaço para ela
+                        if (!gruposPorData[dataTexto]) {
+                            gruposPorData[dataTexto] = [];
+                        }
+                        // Coloca o agendamento dentro da data correta
+                        gruposPorData[dataTexto].push(ag);
+                    });
+
+                    // -----------------------------------------------------------
+                    // 2. CONSTRUIR O HTML COM TÍTULOS DE DATAS E AS GRADES
+                    // -----------------------------------------------------------
+                    let htmlFinal = '';
+
+                    // Para cada data no nosso grupo (ex: "Sexta-feira, 17 de julho")
+                    Object.keys(gruposPorData).forEach(dataTexto => {
+                        
+                        // Cria a Linha de Título para a Data
+                        htmlFinal += `
+                            <h2 class="text-xl font-bold text-yellow-500 mt-12 mb-5 border-b border-zinc-800 pb-2 capitalize flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                ${dataTexto}
+                            </h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+                        `;
+
+                        // Agora, coloca todos os cartões que pertencem apenas a esta data!
+                        gruposPorData[dataTexto].forEach(ag => {
+                            const hInicio = new Date(ag.data_hora_inicio).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                            const hFim = new Date(ag.data_hora_fim).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                            
+                            let badgeEstilo = '';
+                            if (ag.status === 'confirmado') badgeEstilo = 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+                            else if (ag.status === 'bloqueado') badgeEstilo = 'bg-red-500/10 text-red-400 border-red-500/20';
+                            else badgeEstilo = 'bg-zinc-800 text-zinc-400 border-zinc-700/50';
+
+                            let rodapeHtml = `<div class="mt-5 pt-4 border-t border-zinc-800/80 flex justify-between items-center">`;
+                            
+                            // Botão WhatsApp
+                            if (ag.telefone_whatsapp) {
+                                let num = ag.telefone_whatsapp.replace(/\D/g, '');
+                                if (num.length >= 10) num = '55' + num; 
+                                else if (num.length === 9) num = '351' + num;
+                                
+                                rodapeHtml += `
+                                    <a href="https://wa.me/${num}" target="_blank" class="inline-flex items-center text-sm font-semibold text-green-400 hover:text-green-300 transition-colors group">
+                                        <svg class="w-4 h-4 mr-1.5 fill-current text-green-400" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397 0 11.817 0c3.11.001 6.033 1.213 8.232 3.415 2.199 2.202 3.41 5.123 3.41 8.234 0 6.465-5.337 11.813-11.758 11.813-2.007-.001-3.98-.52-5.733-1.51L0 24zm6.59-4.846c1.655.982 3.511 1.5 5.409 1.5 5.429 0 9.849-4.385 9.853-9.777.002-2.611-1.015-5.066-2.868-6.92-1.853-1.854-4.312-2.873-6.924-2.875-5.433 0-9.854 4.386-9.858 9.778a9.695 9.695 0 001.442 5.093l-.956 3.498 3.582-.932zm9.645-5.467c-.297-.148-1.758-.862-2.031-.962-.272-.099-.47-.148-.668.149-.197.297-.766.962-.94 1.16-.173.199-.347.223-.644.075-1.5-.749-2.621-1.3-3.674-3.102-.277-.474.277-.44.793-1.462.087-.149.043-.277-.022-.425-.064-.148-.668-1.597-.916-2.202-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.519.074-.791.371-.272.297-1.038 1.015-1.038 2.475 0 1.46 1.064 2.873 1.213 3.071.149.198 2.095 3.173 5.076 4.447 2.016.862 2.76.891 3.743.743.6-.091 1.757-.714 2.005-1.406.247-.693.247-1.287.173-1.406-.074-.119-.272-.198-.57-.347z"/></svg>
+                                        WhatsApp
+                                    </a>`;
+                            } else {
+                                rodapeHtml += `<span></span>`; 
+                            }
+
+                            // Botão Excluir
+                            rodapeHtml += `
+                                <button onclick="excluirAgendamento(${ag.id_agendamento})" class="text-red-500 hover:text-red-400 text-sm font-medium transition-colors border border-red-500/10 hover:border-red-500/30 bg-red-500/10 px-3 py-1 rounded-md">
+                                    Excluir
+                                </button>
+                            </div>`;
+
+                            // Repare que removi a "Data" de dentro do cartão, já que agora ela está no título grande!
+                            htmlFinal += `
+                                <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/80">
+                                    
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="bg-black/60 border border-zinc-800 px-3 py-1.5 rounded-xl flex items-center">
+                                            <svg class="w-4 h-4 text-zinc-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            <span class="text-xl font-black tracking-tight text-white">${hInicio}</span>
+                                            <span class="text-zinc-600 font-bold text-xs mx-1">até</span>
+                                            <span class="text-zinc-400 font-bold text-sm">${hFim}</span>
+                                        </div>
+                                        <span class="text-[10px] px-2.5 py-1 rounded-lg border uppercase font-bold tracking-wider ${badgeEstilo}">
+                                            ${ag.status}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="space-y-1.5">
+                                        <p class="text-xs text-zinc-500 uppercase font-bold tracking-wider">Cliente / Descrição</p>
+                                        <h3 class="text-lg font-bold text-zinc-100 tracking-tight">${ag.nome}</h3>
+                                        
+                                        <div class="pt-2 flex items-center gap-2 text-xs text-zinc-400">
+                                            <span class="bg-zinc-800/80 px-2 py-1 rounded border border-zinc-700/40 font-medium">${ag.nome_servico}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    ${rodapeHtml}
+                                </div>`;
+                        });
+
+                        htmlFinal += `</div>`; // Fecha a div da Grade
+                    });
+
+                    // Coloca tudo na tela de uma vez só!
+                    mainContainer.innerHTML = htmlFinal;
+                })
+                .catch(err => {
+                    console.error("Erro na requisição:", err);
+                    document.getElementById('container-agenda').innerHTML = `
+                        <div class="border border-red-900/30 bg-red-950/10 text-red-400 rounded-xl p-5 text-center mt-6">
+                            Falha de comunicação com o servidor.
+                        </div>`;
+                });
+        }
+
+        // Função de Excluir (Corrigida com a rota exata da sua API)
+        function excluirAgendamento(id) {
+            if(confirm("Tem certeza que deseja apagar este registo da agenda? O horário voltará a ficar livre para marcações.")) {
+                fetch(`http://127.0.0.1:5000/api/admin/agendamentos/${id}`, { 
+                    method: 'DELETE' 
+                })
+                .then(r => r.json())
+                .then(data => {
+                    alert(data.mensagem || "Apagado com sucesso!");
+                    carregarAgenda(); // Atualiza a agenda instantaneamente e reorganiza as datas
+                })
+                .catch(err => {
+                    console.error("Erro ao excluir:", err);
+                    alert("Erro ao apagar o horário.");
+                });
+            }
+        }
+
+        window.onload = carregarAgenda;
+    </script>
+</body>
+</html>

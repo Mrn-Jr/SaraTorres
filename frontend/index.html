@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendamento de Estética - Elegance</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 </head>
 <body class="bg-[url('./assets/5068951.jpg')] bg-cover bg-center bg-fixed text-white min-h-screen font-sans antialiased">
 
@@ -48,8 +53,9 @@
                 <!-- Escolha de Data -->
                 <div>
                     <label class="block text-sm font-medium text-gray-200 mb-1">Escolha a Data</label>
-                    <input type="date" id="data" required 
-                           class="w-full bg-black/60 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500">
+                    <input type="text" id="data" placeholder="Selecione um dia no calendário..."
+                           class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-3 focus:outline-none focus:border-yellow-500 cursor-pointer shadow-inner"
+                           readonly>
                 </div>
 
                 <!-- Horários Livres (Vêm da API) -->
@@ -99,6 +105,25 @@
     </div>
 
     </main>
+
+    <script>
+    // Inicia o mini calendário premium
+    flatpickr("#data", {
+        locale: "pt", // Idioma em Português
+        minDate: "today", // Impede a cliente de marcar datas no passado!
+        dateFormat: "Y-m-d", // O formato que o nosso Python (Backend) precisa
+        altInput: true,
+        altFormat: "d/m/Y", // O formato visualmente agradável que a cliente vai ver
+        disableMobile: "true", // Força o uso deste calendário bonito mesmo nos telemóveis
+        
+        // Quando a cliente escolhe uma data, disparamos a busca de horários!
+        onChange: function(selectedDates, dateStr, instance) {
+            // Se você tiver uma função que busca os horários livres, chame-a aqui.
+            // Exemplo: buscarHorariosLivres(dateStr);
+            console.log("A data escolhida para buscar horários foi:", dateStr);
+        }
+    });
+</script>
 
     <!-- AQUI ENTRA O JAVASCRIPT QUE COMUNICA COM O BACKEND EM PYTHON -->
     <script>
