@@ -45,7 +45,7 @@
     <script>
         function carregarAgenda() {
             // Nota: Mudar a URL para o seu domínio final da API depois (ex: PythonAnywhere)
-            fetch('http://127.0.0.1:5000/api/admin/agendamentos')
+            fetch('https://mrnjr.pythonanywhere.com/api/admin/agendamentos')
                 .then(r => r.json())
                 .then(data => {
                     const mainContainer = document.getElementById('container-agenda');
@@ -184,7 +184,7 @@
         // Função de Excluir (Corrigida com a rota exata da sua API)
         function excluirAgendamento(id) {
             if(confirm("Tem certeza que deseja apagar este registo da agenda? O horário voltará a ficar livre para marcações.")) {
-                fetch(`http://127.0.0.1:5000/api/admin/agendamentos/${id}`, { 
+                fetch(`https://mrnjr.pythonanywhere.com/api/admin/agendamentos/${id}`, { 
                     method: 'DELETE' 
                 })
                 .then(r => r.json())

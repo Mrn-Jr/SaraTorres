@@ -147,7 +147,7 @@
                 const fimVal = document.getElementById('fim_bloqueio').value;
                 if(!dataVal || !inicioVal || !fimVal) return alert('Preencha todos os campos do bloqueio.');
 
-                fetch('http://127.0.0.1:5000/api/admin/bloquear', {
+                fetch('https://mrnjr.pythonanywhere.com/api/admin/bloquear', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: dataVal, hora_inicio: inicioVal, hora_fim: fimVal })
@@ -163,7 +163,7 @@
 
                 if(!nome || !duracao || !preco) return alert('Preencha todos os campos do serviço.');
 
-                const url = id ? `http://127.0.0.1:5000/api/admin/servicos/${id}` : 'http://127.0.0.1:5000/api/admin/servicos';
+                const url = id ? `https://mrnjr.pythonanywhere.com/api/admin/servicos/${id}` : 'https://mrnjr.pythonanywhere.com/api/admin/servicos';
                 const method = id ? 'PUT' : 'POST';
 
                 fetch(url, {
@@ -179,7 +179,7 @@
 
         // NOVO: Funções de Configuração de Horários
         function carregarConfiguracoes() {
-            fetch('http://127.0.0.1:5000/api/admin/disponibilidade')
+            fetch('https://mrnjr.pythonanywhere.com/api/admin/disponibilidade')
                 .then(r => r.json())
                 .then(data => {
                     data.regras.forEach(regra => {
@@ -215,7 +215,7 @@
             };
 
             // 4. Envia os dados para a API (com a rota correta do admin)
-            fetch('http://127.0.0.1:5000/api/admin/disponibilidade', {
+            fetch('https://mrnjr.pythonanywhere.com/api/admin/disponibilidade', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -231,7 +231,7 @@
         }
 
  function carregarAgenda() {
-            fetch('http://127.0.0.1:5000/api/admin/agendamentos')
+            fetch('https://mrnjr.pythonanywhere.com/api/admin/agendamentos')
                 .then(r => r.json())
                 .then(data => {
                     const lista = document.getElementById('lista-agendamentos');
@@ -276,7 +276,7 @@
 
         function excluirAgendamento(id) {
             if(confirm("Tem certeza que deseja apagar este registo da agenda? O horário voltará a ficar livre para marcações.")) {
-                fetch(`http://127.0.0.1:5000/api/admin/agendamentos/${id}`, { 
+                fetch(`https://mrnjr.pythonanywhere.com/api/admin/agendamentos/${id}`, { 
                     method: 'DELETE' 
                 })
                 .then(r => r.json())
@@ -289,7 +289,7 @@
         }
 
         function carregarServicos() {
-            fetch('http://127.0.0.1:5000/api/servicos')
+            fetch('https://mrnjr.pythonanywhere.com/api/servicos')
                 .then(r => r.json())
                 .then(data => {
                     const lista = document.getElementById('lista-servicos');
@@ -316,7 +316,7 @@
 
         function excluirServico(id) {
             if(confirm("Tem certeza que deseja excluir este serviço do seu catálogo?")) {
-                fetch(`http://127.0.0.1:5000/api/admin/servicos/${id}`, { method: 'DELETE' })
+                fetch(`https://mrnjr.pythonanywhere.com/api/admin/servicos/${id}`, { method: 'DELETE' })
                 .then(r => r.json())
                 .then(data => { alert(data.mensagem); carregarServicos(); })
             }

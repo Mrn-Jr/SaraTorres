@@ -134,7 +134,7 @@
             const form = document.getElementById('form-agendamento');
 
             // 1. Ligar ao servidor Python para buscar o catálogo
-            fetch('http://127.0.0.1:5000/api/servicos')
+            fetch('https://mrnjr.pythonanywhere.com/api/servicos')
                 .then(response => response.json())
                 .then(data => {
                     servicoSelect.innerHTML = '<option value="" class="bg-zinc-900">Selecione um serviço...</option>';
@@ -159,7 +159,7 @@
                     horarioSelect.innerHTML = '<option value="" class="bg-zinc-900">A procurar vagas...</option>';
                     horarioSelect.disabled = true;
 
-                    fetch(`http://127.0.0.1:5000/api/horarios-livres?data=${dataEscolhida}&id_servico=${idServico}`)
+                    fetch(`https://mrnjr.pythonanywhere.com/api/horarios-livres?data=${dataEscolhida}&id_servico=${idServico}`)
                         .then(response => response.json())
                         .then(data => {
                             horarioSelect.innerHTML = '<option value="" class="bg-zinc-900">Selecione um horário...</option>';
@@ -189,7 +189,7 @@
                     horario: horarioSelect.value
                 };
 
-                fetch('http://127.0.0.1:5000/api/agendar', {
+                fetch('https://mrnjr.pythonanywhere.com/api/agendar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dadosAgendamento)
