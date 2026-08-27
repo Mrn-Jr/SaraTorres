@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão - Estética</title>
+    <!-- Importando o Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-gray-200 font-sans antialiased min-h-screen">
+
+    <!-- Cabeçalho Principal -->
+    <header class="bg-black border-b border-zinc-800 p-4 sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-yellow-500 tracking-wide">Painel de Estética</h1>
+            <button class="text-sm text-zinc-400 hover:text-white transition-colors">Sair</button>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-md mx-auto p-4 space-y-8">
+
+        <!-- Secção 1: Agenda do Dia -->
+        <section>
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-lg font-semibold text-white">Agenda de Hoje</h2>
+                <span class="text-xs text-yellow-500 font-medium bg-yellow-500/10 px-2 py-1 rounded border border-yellow-500/20">3 Marcações</span>
+            </div>
+            
+            <!-- Lista de Agendamentos (Exemplo visual estático) -->
+            <div class="space-y-3">
+                <!-- Cartão de Agendamento -->
+                <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-4 flex items-start gap-3 shadow-lg">
+                    <div class="bg-black text-yellow-400 px-3 py-2 rounded-lg text-center border border-zinc-800">
+                        <span class="block text-sm font-bold">14:00</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold text-white">Maria Silva</p>
+                        <p class="text-sm text-zinc-400">Design com Henna (60 min)</p>
+                    </div>
+                    <button class="text-zinc-500 hover:text-green-400">
+                        <!-- Ícone de WhatsApp -->
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.964 9.964 0 001.333 4.993L2 22l5.233-1.237a9.994 9.994 0 004.779 1.216h.004c5.505 0 9.988-4.478 9.989-9.985 0-2.67-1.039-5.178-2.927-7.066A9.957 9.957 0 0012.012 2z"/></svg>
+                    </button>
+                </div>
+
+                <!-- Cartão de Agendamento -->
+                <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-4 flex items-start gap-3 shadow-lg">
+                    <div class="bg-black text-yellow-400 px-3 py-2 rounded-lg text-center border border-zinc-800">
+                        <span class="block text-sm font-bold">15:30</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold text-white">Ana Santos</p>
+                        <p class="text-sm text-zinc-400">Design Simples (30 min)</p>
+                    </div>
+                    <button class="text-zinc-500 hover:text-green-400">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.964 9.964 0 001.333 4.993L2 22l5.233-1.237a9.994 9.994 0 004.779 1.216h.004c5.505 0 9.988-4.478 9.989-9.985 0-2.67-1.039-5.178-2.927-7.066A9.957 9.957 0 0012.012 2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-zinc-800">
+
+        <!-- Secção 2: Gestão de Disponibilidade (Bloqueios Manuais) -->
+        <section>
+            <h2 class="text-lg font-semibold text-white mb-3">Bloquear Horário</h2>
+            <p class="text-sm text-zinc-400 mb-4">Bloqueie a agenda para imprevistos ou pausas.</p>
+            
+            <form class="bg-zinc-900 border border-zinc-700 rounded-xl p-4 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-zinc-400 font-medium mb-1">Data</label>
+                        <input type="date" class="w-full bg-black border border-zinc-700 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 font-medium mb-1">Hora Início</label>
+                        <input type="time" class="w-full bg-black border border-zinc-700 rounded-lg p-2 text-white focus:outline-none focus:border-yellow-500">
+                    </div>
+                </div>
+                <button type="button" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg border border-zinc-700 transition-colors">
+                    Adicionar Bloqueio
+                </button>
+            </form>
+        </section>
+
+        <hr class="border-zinc-800">
+
+        <!-- Secção 3: Gestão de Serviços -->
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-white">Meus Serviços</h2>
+                <button class="text-sm bg-yellow-500 text-black font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-400 transition-colors">
+                    + Novo
+                </button>
+            </div>
+
+            <!-- Lista de Serviços (Exemplo estático) -->
+            <div class="space-y-2">
+                <div class="bg-black border border-zinc-800 rounded-lg p-3 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-white text-sm">Design com Henna</p>
+                        <p class="text-xs text-zinc-500">60 min • R$ 45,00</p>
+                    </div>
+                    <button class="text-yellow-500 text-xs font-bold px-2 py-1 bg-yellow-500/10 rounded">Editar</button>
+                </div>
+                <div class="bg-black border border-zinc-800 rounded-lg p-3 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-white text-sm">Design Simples</p>
+                        <p class="text-xs text-zinc-500">30 min • R$ 30,00</p>
+                    </div>
+                    <button class="text-yellow-500 text-xs font-bold px-2 py-1 bg-yellow-500/10 rounded">Editar</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>
