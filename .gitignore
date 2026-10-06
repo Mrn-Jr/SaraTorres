@@ -1,3 +1,22 @@
+# Ficheiros compilados do Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Variáveis de ambiente e segredos
 .env
+credentials.json
+
+# Ambiente Virtual (NUNCA deve ir para o GitHub)
+venv/
+.venv/
+env/
+
+# Base de Dados Relacional SQLite (Dados locais/produção)
+*.db
+*.sqlite
+*.sqlite3
+
+# Configurações do editor e do sistema
+.vscode/
+.DS\_Store
