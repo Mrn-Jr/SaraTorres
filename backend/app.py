@@ -1,16 +1,27 @@
+import os
+import sqlite3
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime, timedelta
-import sqlite3
 
 app = Flask(__name__)
+@app.route('/')
+def teste():
+    return "O MEU SERVIDOR ESTÁ A LER O FICHEIRO CERTO!"
 CORS(app)
 
 def conectar_db():
-    conexao = sqlite3.connect('backend/estetica.db')
+    # 1. Descobre exatamente em que pasta este ficheiro (app.py) está a rodar na nuvem
+    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+
+    # 2. Cola a pasta atual com o nome do seu banco de dados
+    # Atenção: Isto pressupõe que o ficheiro 'estetica.db' está na mesma pasta que este 'app.py'.
+    caminho_bd = os.path.join(diretorio_atual, 'estetica.db')
+
+    # 3. Conecta usando o caminho completo e seguro
+    conexao = sqlite3.connect(caminho_bd)
     conexao.row_factory = sqlite3.Row
     return conexao
-
 # --- ROTAS DO CLIENTE ---
 @app.route('/api/servicos', methods=['GET'])
 def listar_servicos():
