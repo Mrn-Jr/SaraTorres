@@ -241,7 +241,7 @@ def excluir_servico(id_servico):
 def obter_disponibilidade():
     conexao = conectar_db()
     cursor = conexao.cursor()
-    cursor.execute("SELECT tipo_regra, hora_inicio, hora_fim FROM Disponibilidade")
+    cursor.execute("SELECT dia_semana, tipo_regra, hora_inicio, hora_fim FROM Disponibilidade ORDER BY dia_semana ASC")
     regras = [dict(linha) for linha in cursor.fetchall()]
     conexao.close()
     return jsonify({"regras": regras})
@@ -249,43 +249,42 @@ def obter_disponibilidade():
 @app.route('/api/admin/disponibilidade', methods=['POST'])
 def salvar_disponibilidade():
     dados = request.get_json()
-    
-    # 1. Pega as novas chaves enviadas pelo frontend atualizado
-    dias_semana = dados.get('dias_semana') # Agora é uma lista, ex: [1, 2, 3, 4, 5]
-    hora_abertura = dados.get('hora_abertura')
-    hora_fecho = dados.get('hora_fecho')
-    almoco_inicio = dados.get('almoco_inicio')
-    almoco_fim = dados.get('almoco_fim')
+    dias = dados.get('dias', [])
 
-    # Validação de segurança para garantir que a profissional enviou os dados principais
-    if not dias_semana or not hora_abertura or not hora_fecho:
-        return jsonify({"erro": "Dados obrigatórios incompletos"}), 400
+    if not dias:
+        return jsonify({"erro": "Nenhum dia de trabalho foi selecionado"}), 400
 
     conexao = conectar_db()
     cursor = conexao.cursor()
     
-    # 2. Limpa as configurações antigas para regravar as novas
+    # 1. Limpa as configurações antigas para regravar a nova semana
     cursor.execute("DELETE FROM Disponibilidade")
     
-    # 3. Fazemos um laço (for) para gravar a regra em CADA dia que ela selecionou
-    for dia in dias_semana:
-        # Grava o horário de trabalho (expediente)
+    # 2. Grava as configurações individuais de cada dia marcado
+    for d in dias:
+        dia_semana = int(d['dia_semana'])
+        abertura = d['abertura'][:5]
+        fecho = d['fecho'][:5]
+        
+        # Grava o horário de expediente específico daquele dia (ex: Sábado fechar mais cedo)
         cursor.execute("""
             INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) 
             VALUES (?, ?, ?, 'trabalho')
-        """, (dia, hora_abertura, hora_fecho))
+        """, (dia_semana, abertura, fecho))
         
-        # Grava o horário de almoço (bloqueio fixo) apenas se ela preencheu
-        if almoco_inicio and almoco_fim:
+        # Grava o almoço apenas se a profissional marcou a opção para aquele dia
+        if d.get('tem_almoco') and d.get('almoco_inicio') and d.get('almoco_fim'):
+            almoco_inicio = d['almoco_inicio'][:5]
+            almoco_fim = d['almoco_fim'][:5]
             cursor.execute("""
                 INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) 
                 VALUES (?, ?, ?, 'bloqueio')
-            """, (dia, almoco_inicio, almoco_fim))
+            """, (dia_semana, almoco_inicio, almoco_fim))
     
     conexao.commit()
     conexao.close()
     
-    return jsonify({"mensagem": "Configurações de horários e dias da semana guardadas com sucesso!"}), 201
+    return jsonify({"mensagem": "Horários semanais configurados com sucesso!"}), 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

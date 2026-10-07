@@ -45,53 +45,31 @@
             <button id="btn_bloquear" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 rounded-lg transition-colors shadow-md">Aplicar Bloqueio</button>
         </div>
 
-        <!-- NOVO: Configurações de Expediente e Almoço -->
+        <!-- Secção: Configurar Horários da Semana -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md mt-8">
-            <h2 class="text-xl font-bold text-yellow-500 mb-1">Configurar Horário Padrão</h2>
-            <p class="text-zinc-400 text-sm mb-4">Ajuste os dias, a sua hora de abertura, fecho e as suas pausas de almoço.</p>
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <h2 class="text-xl font-bold text-yellow-500 mb-1">Horários de Atendimento</h2>
+                    <p class="text-zinc-400 text-sm">Marque os dias de trabalho e ajuste o horário de cada dia (ex: Sábado com horário diferente).</p>
+                </div>
+            </div>
+
+            <!-- Botão rápido para facilitar a vida da sua tia -->
+            <div class="mt-3 mb-4">
+                <button type="button" onclick="preencherSegundaSexta()" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-yellow-500 border border-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
+                    ⚡ Copiar horário de Segunda para Terça a Sexta
+                </button>
+            </div>
             
-            <div class="bg-black p-4 rounded-lg border border-zinc-800 mb-4">
-                <h3 class="text-zinc-300 font-semibold mb-3">Dias de Atendimento</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-zinc-300 text-sm">
-                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="1" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Segunda</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="2" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Terça</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="3" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Quarta</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="4" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Quinta</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="5" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700" checked> <span>Sexta</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="6" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700"> <span>Sábado</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" name="dias" value="0" class="form-checkbox text-yellow-500 rounded bg-zinc-800 border-zinc-700"> <span>Domingo</span></label>
-                </div>
+            <!-- Lista com os 7 Dias da Semana -->
+            <div id="grade-dias-semana" class="space-y-3">
+                <!-- Injetado dinamicamente pelo JavaScript -->
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bg-black p-4 rounded-lg border border-zinc-800">
-                    <h3 class="text-zinc-300 font-semibold mb-3">Expediente (Trabalho)</h3>
-                    <div class="flex gap-2">
-                        <div class="w-1/2">
-                            <label class="block text-zinc-500 text-xs mb-1">Abertura</label>
-                            <input type="time" id="config_abertura" value="09:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
-                        </div>
-                        <div class="w-1/2">
-                            <label class="block text-zinc-500 text-xs mb-1">Fecho</label>
-                            <input type="time" id="config_fecho" value="18:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-black p-4 rounded-lg border border-zinc-800">
-                    <h3 class="text-zinc-300 font-semibold mb-3">Pausa (Almoço)</h3>
-                    <div class="flex gap-2">
-                        <div class="w-1/2">
-                            <label class="block text-zinc-500 text-xs mb-1">Início</label>
-                            <input type="time" id="config_almoco_inicio" value="13:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
-                        </div>
-                        <div class="w-1/2">
-                            <label class="block text-zinc-500 text-xs mb-1">Fim</label>
-                            <input type="time" id="config_almoco_fim" value="14:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 focus:outline-none focus:border-yellow-600">
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <button onclick="salvarConfiguracoes()" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3.5 rounded-lg transition-colors shadow-md mt-5">
+                Salvar Todos os Horários
+            </button>
+        </div>
             
             <button onclick="salvarConfiguracoes()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition-colors border border-zinc-700 shadow-md">
                 Salvar Horários e Dias
@@ -177,56 +155,198 @@
             });
         });
 
-        // NOVO: Funções de Configuração de Horários
-        function carregarConfiguracoes() {
-            fetch('https://mrnjr.pythonanywhere.com/api/admin/disponibilidade')
-                .then(r => r.json())
-                .then(data => {
-                    data.regras.forEach(regra => {
-                        if(regra.tipo_regra === 'trabalho') {
-                            document.getElementById('config_abertura').value = regra.hora_inicio;
-                            document.getElementById('config_fecho').value = regra.hora_fim;
-                        } else if (regra.tipo_regra === 'bloqueio') {
-                            document.getElementById('config_almoco_inicio').value = regra.hora_inicio;
-                            document.getElementById('config_almoco_fim').value = regra.hora_fim;
-                        }
-                    });
-                });
+        // URL da API (funciona no PC local e na nuvem PythonAnywhere)
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+            ? 'http://127.0.0.1:5000'
+            : 'https://mrnjr.pythonanywhere.com';
+
+        // Definição dos 7 dias da semana (0=Domingo, 1=Segunda ... 6=Sábado)
+        const DIAS_SEMANA = [
+            { id: 1, nome: "Segunda-feira" },
+            { id: 2, nome: "Terça-feira" },
+            { id: 3, nome: "Quarta-feira" },
+            { id: 4, nome: "Quinta-feira" },
+            { id: 5, nome: "Sexta-feira" },
+            { id: 6, nome: "Sábado" },
+            { id: 0, nome: "Domingo" }
+        ];
+
+        // 1. Desenha os 7 cartões com checkboxes na tela
+        function renderizarEstruturaDias() {
+            const container = document.getElementById('grade-dias-semana');
+            if (!container) return;
+            container.innerHTML = '';
+
+            DIAS_SEMANA.forEach(dia => {
+                container.innerHTML += `
+                    <div class="bg-black border border-zinc-800 rounded-lg p-3 transition-all" id="card_dia_${dia.id}">
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" id="check_dia_${dia.id}" onchange="toggleDia(${dia.id})" class="w-4 h-4 accent-yellow-500 rounded cursor-pointer">
+                                <span class="font-bold text-white text-sm md:text-base">${dia.nome}</span>
+                            </label>
+                            <span id="badge_dia_${dia.id}" class="text-xs text-zinc-500 font-medium">Folga (Fechado)</span>
+                        </div>
+
+                        <div id="corpo_dia_${dia.id}" class="hidden mt-3 pt-3 border-t border-zinc-900 space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-zinc-400 text-xs mb-1">Abertura</label>
+                                    <input type="time" id="abertura_${dia.id}" value="09:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 text-sm focus:outline-none focus:border-yellow-600">
+                                </div>
+                                <div>
+                                    <label class="block text-zinc-400 text-xs mb-1">Fecho</label>
+                                    <input type="time" id="fecho_${dia.id}" value="${dia.id === 6 ? '13:00' : '18:00'}" class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-zinc-200 text-sm focus:outline-none focus:border-yellow-600">
+                                </div>
+                            </div>
+
+                            <div class="bg-zinc-950/70 p-2.5 rounded border border-zinc-800/80">
+                                <label class="flex items-center gap-2 cursor-pointer mb-2">
+                                    <input type="checkbox" id="check_almoco_${dia.id}" onchange="toggleAlmoco(${dia.id})" class="w-3.5 h-3.5 accent-yellow-500 rounded">
+                                    <span class="text-xs text-zinc-300 font-medium">Pausa de Almoço</span>
+                                </label>
+                                <div id="campos_almoco_${dia.id}" class="grid grid-cols-2 gap-3 hidden">
+                                    <div>
+                                        <label class="block text-zinc-500 text-[10px] mb-1">Início Almoço</label>
+                                        <input type="time" id="almoco_inicio_${dia.id}" value="13:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-1.5 text-zinc-200 text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block text-zinc-500 text-[10px] mb-1">Fim Almoço</label>
+                                        <input type="time" id="almoco_fim_${dia.id}" value="14:00" class="w-full bg-zinc-900 border border-zinc-700 rounded p-1.5 text-zinc-200 text-xs">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
-        function salvarConfiguracoes() {
-            // 1. Captura os dias marcados no HTML (retorna uma lista de números)
-            const checkboxes = document.querySelectorAll('input[name="dias"]:checked');
-            const diasSelecionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        // 2. Abre ou fecha os horários do dia
+        function toggleDia(id) {
+            const check = document.getElementById(`check_dia_${id}`);
+            const corpo = document.getElementById(`corpo_dia_${id}`);
+            const badge = document.getElementById(`badge_dia_${id}`);
 
-            // 2. Validação: Impede de salvar se a profissional esquecer de marcar os dias
-            if (diasSelecionados.length === 0) {
-                alert("Por favor, selecione pelo menos um dia da semana para trabalhar.");
-                return;
+            if (check.checked) {
+                corpo.classList.remove('hidden');
+                badge.innerText = 'Ativo';
+                badge.className = 'text-xs text-yellow-500 font-semibold';
+            } else {
+                corpo.classList.add('hidden');
+                badge.innerText = 'Folga (Fechado)';
+                badge.className = 'text-xs text-zinc-500 font-medium';
+            }
+        }
+
+        // 3. Abre ou fecha os campos de almoço
+        function toggleAlmoco(id) {
+            const check = document.getElementById(`check_almoco_${id}`);
+            const campos = document.getElementById(`campos_almoco_${id}`);
+            if (check.checked) {
+                campos.classList.remove('hidden');
+            } else {
+                campos.classList.add('hidden');
+            }
+        }
+
+        // 4. Carrega os horários guardados no banco SQLite
+        function carregarConfiguracoes() {
+            renderizarEstruturaDias();
+
+            fetch(`${API_BASE}/api/admin/disponibilidade`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.regras || data.regras.length === 0) return;
+
+                    data.regras.forEach(regra => {
+                        const diaId = regra.dia_semana;
+                        const checkDia = document.getElementById(`check_dia_${diaId}`);
+                        if (!checkDia) return;
+
+                        if (regra.tipo_regra === 'trabalho') {
+                            checkDia.checked = true;
+                            toggleDia(diaId);
+                            document.getElementById(`abertura_${diaId}`).value = regra.hora_inicio;
+                            document.getElementById(`fecho_${diaId}`).value = regra.hora_fim;
+                        } else if (regra.tipo_regra === 'bloqueio') {
+                            const checkAlmoco = document.getElementById(`check_almoco_${diaId}`);
+                            if (checkAlmoco) {
+                                checkAlmoco.checked = true;
+                                toggleAlmoco(diaId);
+                                document.getElementById(`almoco_inicio_${diaId}`).value = regra.hora_inicio;
+                                document.getElementById(`almoco_fim_${diaId}`).value = regra.hora_fim;
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.error("Erro ao carregar disponibilidade:", err));
+        }
+
+        // 5. Botão de atalho: copia a Segunda para Terça, Quarta, Quinta e Sexta
+        function preencherSegundaSexta() {
+            const segAbertura = document.getElementById('abertura_1').value;
+            const segFecho = document.getElementById('fecho_1').value;
+            const segTemAlmoco = document.getElementById('check_almoco_1').checked;
+            const segAlmocoInicio = document.getElementById('almoco_inicio_1').value;
+            const segAlmocoFim = document.getElementById('almoco_fim_1').value;
+
+            [1-4].forEach(id => {
+                document.getElementById(`check_dia_${id}`).checked = true;
+                toggleDia(id);
+                document.getElementById(`abertura_${id}`).value = segAbertura;
+                document.getElementById(`fecho_${id}`).value = segFecho;
+                
+                const almocoCheck = document.getElementById(`check_almoco_${id}`);
+                almocoCheck.checked = segTemAlmoco;
+                toggleAlmoco(id);
+                document.getElementById(`almoco_inicio_${id}`).value = segAlmocoInicio;
+                document.getElementById(`almoco_fim_${id}`).value = segAlmocoFim;
+            });
+
+            alert('Horário de Segunda-feira copiado para Terça a Sexta!');
+        }
+
+        // 6. Envia a lista com os horários de cada dia para o Python
+        function salvarConfiguracoes() {
+            const diasConfigurados = [];
+
+            DIAS_SEMANA.forEach(dia => {
+                const check = document.getElementById(`check_dia_${dia.id}`);
+                if (check && check.checked) {
+                    const abertura = document.getElementById(`abertura_${dia.id}`).value;
+                    const fecho = document.getElementById(`fecho_${dia.id}`).value;
+                    const temAlmoco = document.getElementById(`check_almoco_${dia.id}`).checked;
+                    const almocoInicio = document.getElementById(`almoco_inicio_${dia.id}`).value;
+                    const almocoFim = document.getElementById(`almoco_fim_${dia.id}`).value;
+
+                    diasConfigurados.push({
+                        dia_semana: dia.id,
+                        abertura: abertura,
+                        fecho: fecho,
+                        tem_almoco: temAlmoco,
+                        almoco_inicio: temAlmoco ? almocoInicio : null,
+                        almoco_fim: temAlmoco ? almocoFim : null
+                    });
+                }
+            });
+
+            if (diasConfigurados.length === 0) {
+                return alert("Por favor, selecione pelo menos um dia de trabalho.");
             }
 
-            // 3. Monta o pacote de dados (payload) alinhado com o que o Python espera
-            const payload = {
-                dias_semana: diasSelecionados, // NOVO: Envia a lista de dias (ex: [1, 2, 3])
-                hora_abertura: document.getElementById('config_abertura').value,
-                hora_fecho: document.getElementById('config_fecho').value,
-                almoco_inicio: document.getElementById('config_almoco_inicio').value,
-                almoco_fim: document.getElementById('config_almoco_fim').value
-            };
-
-            // 4. Envia os dados para a API (com a rota correta do admin)
-            fetch('https://mrnjr.pythonanywhere.com/api/admin/disponibilidade', {
+            fetch(`${API_BASE}/api/admin/disponibilidade`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ dias: diasConfigurados })
             })
             .then(r => r.json())
             .then(data => {
-                alert(data.mensagem); // Mostra o aviso de sucesso!
+                alert(data.mensagem || "Horários guardados com sucesso!");
             })
             .catch(err => {
                 console.error("Erro ao salvar:", err);
-                alert("Ocorreu um erro ao salvar as configurações.");
+                alert("Ocorreu um erro ao salvar os horários.");
             });
         }
 
