@@ -269,34 +269,33 @@ def salvar_disponibilidade():
     conexao = conectar_db()
     cursor = conexao.cursor()
     
-    # 1. Limpa as configurações antigas para regravar a nova semana
+    # 1. Limpa as configurações anteriores para regravar a semana atualizada
     cursor.execute("DELETE FROM Disponibilidade")
     
-    # 2. Grava as configurações individuais de cada dia marcado
+    # 2. Percorre cada dia enviado individualmente
     for d in dias:
-        dia_semana = int(d['dia_semana'])
+        dia = int(d['dia_semana'])
         abertura = d['abertura'][:5]
         fecho = d['fecho'][:5]
         
-        # Grava o horário de expediente específico daquele dia (ex: Sábado fechar mais cedo)
+        # Grava o horário de expediente específico daquele dia
         cursor.execute("""
             INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) 
             VALUES (?, ?, ?, 'trabalho')
-        """, (dia_semana, abertura, fecho))
+        """, (dia, abertura, fecho))
         
-        # Grava o almoço apenas se a profissional marcou a opção para aquele dia
+        # Grava a pausa de almoço apenas se tiver sido ativada para esse dia
         if d.get('tem_almoco') and d.get('almoco_inicio') and d.get('almoco_fim'):
-            almoco_inicio = d['almoco_inicio'][:5]
-            almoco_fim = d['almoco_fim'][:5]
             cursor.execute("""
                 INSERT INTO Disponibilidade (dia_semana, hora_inicio, hora_fim, tipo_regra) 
                 VALUES (?, ?, ?, 'bloqueio')
-            """, (dia_semana, almoco_inicio, almoco_fim))
+            """, (dia, d['almoco_inicio'][:5], d['almoco_fim'][:5]))
     
     conexao.commit()
     conexao.close()
     
-    return jsonify({"mensagem": "Horários semanais configurados com sucesso!"}), 201
+    return jsonify({"mensagem": "Configurações de horários e dias da semana guardadas com sucesso!"}), 201
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
