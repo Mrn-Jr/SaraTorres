@@ -107,8 +107,9 @@ def buscar_horarios():
         
         conflito_agenda = False
         for m in marcacoes_do_dia:
-            hora_inicio_str = m['data_hora_inicio'].split(" ")[1][:5]
-            hora_fim_str = m['data_hora_fim'].split(" ")[1][:5]
+            # Substitui o "T" por um espaço falso antes de cortar, prevenindo o Erro 500 do Linux
+            hora_inicio_str = str(m['data_hora_inicio']).replace("T", " ").split(" ")[1][:5]
+            hora_fim_str = str(m['data_hora_fim']).replace("T", " ").split(" ")[1][:5]
             
             m_inicio = datetime.strptime(hora_inicio_str, "%H:%M")
             m_fim = datetime.strptime(hora_fim_str, "%H:%M")
