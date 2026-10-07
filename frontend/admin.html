@@ -71,11 +71,6 @@
             </button>
         </div>
             
-            <button onclick="salvarConfiguracoes()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition-colors border border-zinc-700 shadow-md">
-                Salvar Horários e Dias
-            </button>
-        </div>
-
         <!-- Gestão de Serviços -->
         <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-5 shadow-md flex justify-between items-center mt-8">
             <h2 class="text-xl font-bold text-white">Serviços</h2>
@@ -291,7 +286,7 @@
             const segAlmocoInicio = document.getElementById('almoco_inicio_1').value;
             const segAlmocoFim = document.getElementById('almoco_fim_1').value;
 
-            [1-4].forEach(id => {
+            [2-5].forEach(id => {
                 document.getElementById(`check_dia_${id}`).checked = true;
                 toggleDia(id);
                 document.getElementById(`abertura_${id}`).value = segAbertura;
